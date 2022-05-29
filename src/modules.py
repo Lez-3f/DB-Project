@@ -29,3 +29,6 @@ class Admin(Base):
     
     ano = Column(Integer, primary_key=True) # 编号
     
+    def __init__(self, no):
+        self.ano = no
+    
