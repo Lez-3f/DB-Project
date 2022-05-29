@@ -3,8 +3,11 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 22:08:18
 LastEditors: Zel
-LastEditTime: 2022-05-28 22:11:02
+LastEditTime: 2022-05-29 17:09:04
 '''
+SUCCESS_CODE = 0
+FAIL_CODE = 1
+
 MALE = 1
 FEMALE = 0
 

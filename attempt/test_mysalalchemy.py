@@ -29,5 +29,7 @@ engine = create_engine('mysql+pymysql://root:s6d5v15sa1dva5s6d@localhost:3306/co
 Session = sessionmaker(bind=engine)
 session = Session()
 
-for instance in session.query(Student).order_by(Student.snum):
-    print(instance.sname)
+res = session.query(Student).filter(Student.snum == '123456').delete()
+print(res)
+session.commit()
+session.close()
