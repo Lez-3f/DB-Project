@@ -4,21 +4,28 @@
 # @FileName:   modules.py
 # @Author  :   Erler_ZHU
 # @Email   :   2995441811@qq.com
-
-from ast import In
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, String, Integer
-
+from sqlalchemy import Column, ForeignKey, String, Integer, Text
 Base = declarative_base()
 
+class User(Base):
+    
+    __tablename__ = 'user'
+    
+    uno = Column(Integer, primary_key=True)
+    uname = Column(String, nullable=False)
+    usex = Column(Integer, nullable=False)
+    upasswd = Column(Text, nullable=False)
+    
+    def __init__(self, no, name, sex, passwd):
+        self.uno = no
+        self.uname = name
+        self.usex = sex
+        self.upasswd = passwd
+        
 class Admin(Base):
-    """
-    管理员类
-    """
     
-    __tablename__ == 'admin'
+    __tablename__ = 'admintt'
     
-    ano = Column(Integer, primary_key=True) # 编号 
-    aname = Column(String, nullable = False) # 姓名
-    apasswd = Column(String, nullable = False)
+    ano = Column(Integer, primary_key=True) # 编号
     

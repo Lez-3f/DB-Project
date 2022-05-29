@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS equipment(
     PRIMARY KEY (eno)
 );
 
-DROP TABLE reservation;
+-- DROP TABLE reservation;
 CREATE TABLE IF NOT EXISTS reservation(
     rno INT NOT NULL,
     rguest INT NOT NULL,
@@ -41,3 +41,18 @@ CREATE TABLE IF NOT EXISTS rental(
     CONSTRAINT FK_GST_RT FOREIGN KEY(rtguest) REFERENCES user(uno),
     CONSTRAINT FK_EQ FOREIGN KEY(rteq) REFERENCES equipment(eno)
 );
+
+CREATE TABLE IF NOT EXISTS dept_info(
+    dname VARCHAR(50) NOT NULL,
+    dhour_r FLOAT NOT NULL,
+    dnum_rt INT NOT NULL,
+    PRIMARY KEY(dname)
+);
+
+CREATE TABLE IF NOT EXISTS sport_info(
+    sptype VARCHAR(50) NOT NULL,
+    spname VARCHAR(50) NOT NULL,
+    sphour_r FLOAT NOT NULL,
+    spnum_rt INT NOT NULL,
+    PRIMARY KEY(sptype)
+)

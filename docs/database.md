@@ -108,6 +108,7 @@
 
 | 属性       | 键类型 | 数据类型    | 说明    |
 | -------- | --- | ------- | ----- |
-| sptype   | 主键  | varchar | 运动类型  |
+| sptype   | 主键  | int     | 运动类型  |
+| spname   |     | varchar | 运动名称  |
 | sphour_r |     | float   | 总预约时间 |
 | spnum_rt |     | int     | 总租借次数 |

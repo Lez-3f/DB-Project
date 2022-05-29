@@ -1,0 +1,17 @@
+'''
+Autor: Zel
+Email: 2995441811@qq.com
+Date: 2022-05-28 22:08:18
+LastEditors: Zel
+LastEditTime: 2022-05-28 22:11:02
+'''
+MALE = 1
+FEMALE = 0
+
+NORMAL_STU = 0
+TALENT_STU = 1
+
+BASKETBALL = 0
+BADMINTON = 1
+TABLETENNIS = 2
+VOLLEYBALL = 3

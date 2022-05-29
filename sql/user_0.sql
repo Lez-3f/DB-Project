@@ -1,7 +1,9 @@
+-- drop table admintt, teacher, student;
+-- drop table reservation, rental, user;
 CREATE TABLE IF NOT EXISTS user(
     uno INT NOT NULL,
     uname VARCHAR(20) NOT NULL,
-    usex INT NOT NULL,
+    usex char(10) NOT NULL,
     upasswd TEXT NOT NULL,
     PRIMARY KEY(uno)
 );
@@ -30,3 +32,15 @@ CREATE TABLE IF NOT EXISTS student(
     CONSTRAINT FK_ST FOREIGN KEY(sno) REFERENCES user(uno)
 );
 
+DELETE FROM user
+WHERE uno = 1;
+
+INSERT INTO user VALUES
+(1, "祝尔乐", "男", "xxx98765431"),
+(2, "张清", "女", "ncjdkan"),
+(3, "王华", "男", "scnkl1314");
+
+INSERT INTO admintt VALUES
+(1),
+(2),
+(3);
