@@ -4,8 +4,17 @@
 # @FileName:   modules.py
 # @Author  :   Erler_ZHU
 # @Email   :   2995441811@qq.com
+from datetime import datetime
+
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, ForeignKey, String, Integer, Text, CHAR
+from sqlalchemy import Column, Date, ForeignKey, String, Integer, Text, CHAR, TIMESTAMP, DateTime
+from sqlalchemy import BigInteger
+
+from utils import get_order_no
+from utils import CT_ST_AVAILABLE
+from utils import RT_ST_DRAW, RT_ST_RET
+from utils import RSV_ST_REJ, RSV_ST_WAIT, RSV_ST_PASS
+
 Base = declarative_base()
 
 class User(Base):
@@ -63,3 +72,83 @@ class Teacher(Base):
         self.tphnum = phnum
         
     
+class Court(Base):
+    
+    __tablename__ = 'court'
+    
+    cno = Column(Integer, primary_key=True)
+    cname = Column(String, nullable=False)
+    cinfo = Column(Text, nullable=True)
+    ctype = Column(Integer)
+    cstate = Column(Integer)
+    
+    def __init__(self, no, name, info, type):
+        self.cno = no
+        self.cname = name
+        self.cinfo = info
+        self.ctype = type
+        self.cstate = CT_ST_AVAILABLE
+        
+class Equipment(Base):
+    
+    __tablename__ = 'equipment'
+    
+    eno = Column(Integer, primary_key=True)
+    ename = Column(String)
+    enum_t = Column(Integer)
+    enum_a = Column(Integer)
+    estate = Column(Integer)
+    
+    def __init__(self, no, name, num_t, num_a, state):
+        self.eno = no
+        self.ename = name
+        self.enum_t = num_t
+        self.enum_a = num_a
+        self.estate = state
+
+class Reservation(Base):
+    
+    __tablename__ = 'reservation'
+    
+    rno = Column(BigInteger, primary_key = True)
+    rguest = Column(Integer, ForeignKey(User.uno))
+    rcourt = Column(Integer, ForeignKey(Court.cno))
+    rtime = Column(DateTime)
+    rbegin = Column(DateTime)
+    rend = Column(DateTime)
+    rstate = Column(Integer)
+    rreason = Column(Text)
+    
+    def __init__(self, guest, court, begin, end, reason):
+        
+        self.rguest = guest
+        self.rtime = datetime.now()
+        self.rno = get_order_no(self.guest, self.rtime)
+        
+        self.rcourt = court
+        self.rtime = datetime.now()
+        self.rbegin = begin
+        self.rend = end
+        self.rstate = RSV_ST_WAIT
+        self.rreason = reason
+        
+class Rental(Base):
+    
+    __tablename__ = 'rental'
+    
+    rtno = Column(BigInteger, primary_key=True)
+    rtguest = Column(Integer, ForeignKey(User.uno))
+    rteq = Column(Integer, ForeignKey(Equipment.eno))
+    rtdraw = Column(DateTime)
+    rtreturn = Column(DateTime)
+    rtnum = Column(Integer)
+    rtstate = Column(Integer)
+    
+    def __init__(self, guest, eq, draw, num):
+        self.rtdraw = datetime.now()
+        self.guest = guest
+        self.rno = get_order_no(self.guest, self.rtdraw)
+        
+        self.rteq = eq
+        self.rtnum = num
+        self.rtstate = RT_ST_DRAW

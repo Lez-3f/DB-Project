@@ -16,14 +16,14 @@ CREATE TABLE IF NOT EXISTS equipment(
     PRIMARY KEY (eno)
 );
 
--- DROP TABLE reservation;
+DROP TABLE reservation;
 CREATE TABLE IF NOT EXISTS reservation(
-    rno INT NOT NULL,
+    rno BIGINT NOT NULL,
     rguest INT NOT NULL,
     rcourt INT NOT NULL,
-    rdate DATE NOT NULL,
-    rbegin TIME NOT NULL,
-    rend TIME NOT NULL,
+    rtime DATETIME NOT NULL,
+    rbegin DATETIME NOT NULL,
+    rend DATETIME NOT NULL,
     rstate INT NOT NULL,
     rreason TEXT,
     PRIMARY KEY(rno),
@@ -31,10 +31,13 @@ CREATE TABLE IF NOT EXISTS reservation(
     CONSTRAINT FK_CT FOREIGN KEY(rcourt) REFERENCES court(cno)
 );
 
+DROP TABLE rental;
 CREATE TABLE IF NOT EXISTS rental(
-    rtno INT NOT NULL,
+    rtno BIGINT NOT NULL,
     rtguest INT NOT NULL,
     rteq INT NOT NULL,
+    rtdraw DATETIME NOT NULL,
+    rtreturn DATETIME NOT NULL,
     rtnum INT NOT NULL,
     rtstate INT NOT NULL,
     PRIMARY KEY(rtno),

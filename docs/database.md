@@ -33,13 +33,13 @@
 
 表名：`student`
 
-| 属性     | 键类型      | 数据类型     | 说明                 |
-| ------ | -------- | -------- | ------------------ |
-| sno    | 主键，外键    | int      | 学生编号               |
-| sdept  |          | varchar  | 院系名称               |
-| sclazz |          | varchar  | 班级名称               |
-| srank  | 可空（默认为0） | int      | 学生身份 0-普通学生， 1-特长生 |
-| sphnum |          | char(20) | 学生手机号码             |
+| 属性     | 键类型   | 数据类型     | 说明                 |
+| ------ | ----- | -------- | ------------------ |
+| sno    | 主键，外键 | int      | 学生编号               |
+| sdept  |       | varchar  | 院系名称               |
+| sclazz |       | varchar  | 班级名称               |
+| srank  | 默认为0  | int      | 学生身份 0-普通学生， 1-特长生 |
+| sphnum |       | char(20) | 学生手机号码             |
 
 ### 场地信息表
 
@@ -69,28 +69,30 @@
 
 表名：`reservation`
 
-| 属性      | 键类型 | 数据类型 | 说明     |
-| ------- | --- | ---- | ------ |
-| rno     | 主键  | int  | 预约订单编号 |
-| rguest  | 外键  | int  | 预约者编号  |
-| rcourt  | 外键  | int  | 场地编号   |
-| rdate   |     | data | 预约日期   |
-| rbegin  |     | time | 预约开始时间 |
-| rend    |     | time | 预约结束时间 |
-| rstate  |     | int  | 预约的状态  |
-| rreason |     | text | 预约理由   |
+| 属性      | 键类型 | 数据类型     | 说明     |
+| ------- | --- | -------- | ------ |
+| rno     | 主键  | bigint   | 预约订单编号 |
+| rguest  | 外键  | int      | 预约者编号  |
+| rcourt  | 外键  | int      | 场地编号   |
+| rtime   |     | datetime | 预约的时间  |
+| rbegin  |     | datetime | 预约开始时间 |
+| rend    |     | datetime | 预约结束时间 |
+| rstate  |     | int      | 预约的状态  |
+| rreason |     | text     | 预约理由   |
 
 ### 租借器材信息表
 
 表名：`rental`
 
-| 属性      | 键类型 | 数据类型 | 说明     |
-| ------- | --- | ---- | ------ |
-| rtno    | 主键  | int  | 租借订单编号 |
-| rtguest | 外键  | int  | 租借者编号  |
-| rteq    | 外键  | int  | 租借的器材  |
-| rtnum   |     | int  | 租借数量   |
-| rtstate |     | int  | 租借状态   |
+| 属性       | 键类型 | 数据类型     | 说明     |
+| -------- | --- | -------- | ------ |
+| rtno     | 主键  | bigint   | 租借订单编号 |
+| rtguest  | 外键  | int      | 租借者编号  |
+| rteq     | 外键  | int      | 租借的器材  |
+| rtdraw   |     | datetime | 领取时间   |
+| rtreturn |     | datetime | 归还时间   |
+| rtnum    |     | int      | 租借数量   |
+| rtstate  |     | int      | 租借状态   |
 
 ### 院系信息表
 
