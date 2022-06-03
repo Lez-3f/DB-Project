@@ -10,7 +10,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Date, ForeignKey, String, Integer, Text, CHAR, TIMESTAMP, DateTime
 from sqlalchemy import BigInteger
 
-from utils import get_order_no
+from utils import EQ_ST_AVAILABLE, get_order_no
 from utils import CT_ST_AVAILABLE
 from utils import RT_ST_DRAW, RT_ST_RET
 from utils import RSV_ST_REJ, RSV_ST_WAIT, RSV_ST_PASS
@@ -99,12 +99,12 @@ class Equipment(Base):
     enum_a = Column(Integer)
     estate = Column(Integer)
     
-    def __init__(self, no, name, num_t, num_a, state):
+    def __init__(self, no, name, num_t):
         self.eno = no
         self.ename = name
         self.enum_t = num_t
-        self.enum_a = num_a
-        self.estate = state
+        self.enum_a = num_t # 初始认为可用数量和总数量相等
+        self.estate = EQ_ST_AVAILABLE
 
 class Reservation(Base):
     

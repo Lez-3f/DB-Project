@@ -1,9 +1,11 @@
+-- DROP TABLE reservation;
+-- DROP TABLE court;
 CREATE TABLE IF NOT EXISTS court(
     cno INT NOT NULL,
     cname VARCHAR(50),
     cinfo TEXT,
     ctype INT NOT NULL,
-    cstate INT NOT NULL,
+    cstate INT NOT NULL DEFAULT 0,
     PRIMARY KEY (cno)
 );
 
@@ -16,7 +18,7 @@ CREATE TABLE IF NOT EXISTS equipment(
     PRIMARY KEY (eno)
 );
 
-DROP TABLE reservation;
+-- DROP TABLE reservation;
 CREATE TABLE IF NOT EXISTS reservation(
     rno BIGINT NOT NULL,
     rguest INT NOT NULL,
@@ -31,7 +33,7 @@ CREATE TABLE IF NOT EXISTS reservation(
     CONSTRAINT FK_CT FOREIGN KEY(rcourt) REFERENCES court(cno)
 );
 
-DROP TABLE rental;
+-- DROP TABLE rental;
 CREATE TABLE IF NOT EXISTS rental(
     rtno BIGINT NOT NULL,
     rtguest INT NOT NULL,

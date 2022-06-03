@@ -3,17 +3,19 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 21:21:14
 LastEditors: Zel
-LastEditTime: 2022-06-03 00:49:32
+LastEditTime: 2022-06-03 20:07:40
 '''
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import func
 
-from modules import Court, User, Admin, Student, Teacher
+from modules import Court, Equipment, Reservation, User, Admin, Student, Teacher
 from utils import FAIL_CODE, NORMAL_STU, SUCCESS_CODE, TALENT_STU
 from utils import BASKETBALL, BADMINTON, TABLETENNIS, VOLLEYBALL
 
 from utils import session_commit
+
+from datetime import datetime, timedelta
 
 engine = create_engine('mysql+pymysql://root:s6d5v15sa1dva5s6d@localhost:3306/db_proj_test?charset=utf8') # 引擎
 DBSession = sessionmaker(bind=engine) # 会话
@@ -123,12 +125,106 @@ def add_court(no, name, type, info=''):
     rtn['ret'] = SUCCESS_CODE
     return rtn
     
-def add_experiment(no, )
+def add_equipment(no, name, num_t):
+    new_eq = Equipment(no, name, num_t)
+    session = DBSession()
+    
+    session.add(new_eq)
+    rtn = session_commit(session)
+    if 'err_msg' in rtn.keys():
+        return rtn
+    
+    session.close()
+    rtn['ret'] = SUCCESS_CODE
+    return rtn
+
+def remove_court(no):
+    session = DBSession()
+    session.query(Court).filter(Court.cno == no).delete()
+    rtn = session_commit(session)
+    if 'err_msg' in rtn.keys():
+        return rtn
+    
+    session.close()
+    rtn['ret'] = SUCCESS_CODE
+    return rtn
+
+def remove_eq(no):
+    session = DBSession()
+    session.query(Equipment).filter(Equipment.eno == no).delete()
+    rtn = session_commit(session)
+    if 'err_msg' in rtn.keys():
+        return rtn
+    
+    session.close()
+    rtn['ret'] = SUCCESS_CODE
+    return rtn    
 
 """增删改查场地器材信息end"""
 
+"""功能接口begin"""
+def login(no, passwd):
+    # 返回登录状态、错误信息、用户信息
+    rtn = {}
+    
+    session = DBSession()
+    user:User = session.query(User).fliter(User.uno == no).first()
+    
+    if not user:
+        rtn['ret'] = FAIL_CODE
+        rtn['err_msg'] = '用户不存在'
+        return rtn
+        
+    if user.upasswd != passwd:
+        rtn['ret'] = FAIL_CODE
+        rtn['err_msg'] = '用户密码错误'
+        return rtn
+    
+    rtn['ret'] = SUCCESS_CODE
+    rtn['user'] = user
+    return rtn
+
+def get_court_statetable():
+    """
+        return: a dict
+            'ret'
+            'court_info': [bkb, bmt, tt, vb]
+                each sport obj is a list of tuple(court, statetable)
+                statetable: a 7 * 14 matrix of court state
+    """
+    
+    def get_this_week():
+        today = datetime.today()
+        today = datetime.strptime(today, '%Y-%m-%d')    # 将字符串格式化为datetime类型
+        weekday = today.weekday()   # 获取输入的日期是周几：int 周一为0
+        # print(weekday)
+        ret = list()
+        # 这周开始的时间：这周开始的日期为今天的日期减去周几，如周一的减0，所以开始日期就是输入日期了
+        start_day = today - timedelta(weekday)
+        for i in range(7):
+            wd = start_day + timedelta(i)   # 从开始日期加一整周的时间
+            ret.append(wd.strftime('%Y-%m-%d')) # 转换为字符串后加入列表中
+        return ret
+
+def make_reservation(guest, court, begin, end, reason):
+    new_rsv = Reservation(guest, court, begin, end, reason)
+    
+    session = DBSession()
+    session.add(new_rsv)
+    rtn = session_commit(session)
+    if 'err_msg' in rtn.keys():
+        return rtn
+    
+    session.close()
+    rtn['ret'] = SUCCESS_CODE
+    return rtn 
+        
+      
+"""功能接口end"""
+
 ## test
 if __name__ == '__main__':
-    add_student(100002, '王五', '男', 'sjkcks', '电机系', '电01', '17818283928')
-    # remove_user(100002)
+    # add_student(100002, '王五', '男', 'sjkcks', '电机系', '电01', '17818283928')
+    # print(remove_user(1))
+    make_reservation()
     pass
