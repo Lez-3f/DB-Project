@@ -3,7 +3,7 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 22:08:18
 LastEditors: Zel
-LastEditTime: 2022-06-03 20:18:03
+LastEditTime: 2022-06-03 22:56:50
 '''
 from datetime import datetime
 from random import randint
@@ -34,6 +34,7 @@ EQ_ST_MAINTAIN = 2
 RSV_ST_WAIT = 0
 RSV_ST_PASS = 1
 RSV_ST_REJ = 2
+RSV_ST_MAINTAIN = 3
 RSV_ST_UNVALUE = 999
 
 RT_ST_DRAW = 0

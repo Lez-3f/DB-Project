@@ -123,7 +123,7 @@ class Reservation(Base):
         
         self.rguest = guest
         self.rtime = datetime.now()
-        self.rno = get_order_no(self.guest, self.rtime)
+        self.rno = get_order_no(self.rguest, self.rtime)
         
         self.rcourt = court
         self.rtime = datetime.now()

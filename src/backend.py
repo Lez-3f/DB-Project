@@ -3,7 +3,7 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 21:21:14
 LastEditors: Zel
-LastEditTime: 2022-06-03 20:07:40
+LastEditTime: 2022-06-04 10:42:15
 '''
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -15,7 +15,8 @@ from utils import BASKETBALL, BADMINTON, TABLETENNIS, VOLLEYBALL
 
 from utils import session_commit
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
+from time import strftime
 
 engine = create_engine('mysql+pymysql://root:s6d5v15sa1dva5s6d@localhost:3306/db_proj_test?charset=utf8') # 引擎
 DBSession = sessionmaker(bind=engine) # 会话
@@ -162,7 +163,7 @@ def remove_eq(no):
 
 """增删改查场地器材信息end"""
 
-"""功能接口begin"""
+"""用户通用功能接口begin"""
 def login(no, passwd):
     # 返回登录状态、错误信息、用户信息
     rtn = {}
@@ -184,7 +185,16 @@ def login(no, passwd):
     rtn['user'] = user
     return rtn
 
-def get_court_statetable():
+def get_eq_info():
+    """
+        return: a dict
+            'ret'
+            'eq_info': [bkb, bmt, tt, vb]
+                each sport obj is a list of tuple(court, statetable)
+                statetable: a 7 * 14 matrix of court state
+    """
+
+def get_court_info():
     """
         return: a dict
             'ret'
@@ -206,6 +216,18 @@ def get_court_statetable():
             ret.append(wd.strftime('%Y-%m-%d')) # 转换为字符串后加入列表中
         return ret
 
+
+        
+      
+"""用户通用功能接口end"""
+
+
+"""管理员功能接口begin"""
+
+"""管理员功能接口end"""
+
+
+"""老师学生功能接口begin"""
 def make_reservation(guest, court, begin, end, reason):
     new_rsv = Reservation(guest, court, begin, end, reason)
     
@@ -218,13 +240,13 @@ def make_reservation(guest, court, begin, end, reason):
     session.close()
     rtn['ret'] = SUCCESS_CODE
     return rtn 
-        
-      
-"""功能接口end"""
+"""老师学生功能接口end"""
 
 ## test
 if __name__ == '__main__':
     # add_student(100002, '王五', '男', 'sjkcks', '电机系', '电01', '17818283928')
     # print(remove_user(1))
-    make_reservation()
+    begin = datetime(2022, 6, 3, 9)
+    end = datetime(2022, 6, 3, 11)
+    # make_reservation(1, 2001, begin, end, '系队训练')
     pass

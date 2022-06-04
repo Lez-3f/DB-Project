@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS equipment(
 
 -- DROP TABLE reservation;
 CREATE TABLE IF NOT EXISTS reservation(
-    rno BIGINT NOT NULL,
+    rno CHAR(24) NOT NULL,
     rguest INT NOT NULL,
     rcourt INT NOT NULL,
     rtime DATETIME NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS reservation(
 
 -- DROP TABLE rental;
 CREATE TABLE IF NOT EXISTS rental(
-    rtno BIGINT NOT NULL,
+    rtno CHAR(24) NOT NULL,
     rtguest INT NOT NULL,
     rteq INT NOT NULL,
     rtdraw DATETIME NOT NULL,
