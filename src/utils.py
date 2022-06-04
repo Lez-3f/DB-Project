@@ -3,7 +3,7 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 22:08:18
 LastEditors: Zel
-LastEditTime: 2022-06-04 10:48:11
+LastEditTime: 2022-06-04 15:42:27
 '''
 from datetime import datetime
 from random import randint
@@ -40,6 +40,8 @@ RSV_ST_UNVALUE = 999
 RT_ST_DRAW = 0
 RT_ST_RET = 1
 RT_ST_UNVALUE = 999
+
+sports = ['篮球', '羽毛球', '乒乓球', '排球', '网球']
 
 def session_commit(session):
     rtn = {}

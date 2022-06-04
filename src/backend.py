@@ -3,14 +3,14 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 21:21:14
 LastEditors: Zel
-LastEditTime: 2022-06-04 11:25:22
+LastEditTime: 2022-06-04 12:28:51
 '''
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import func
 
 from modules import Court, Equipment, Reservation, User, Admin, Student, Teacher
-from utils import FAIL_CODE, NORMAL_STU, SUCCESS_CODE, TALENT_STU
+from utils import EQ_ST_MAINTAIN, FAIL_CODE, NORMAL_STU, SUCCESS_CODE, TALENT_STU
 from utils import BASKETBALL, BADMINTON, TABLETENNIS, VOLLEYBALL
 
 from utils import session_commit
@@ -137,16 +137,21 @@ def get_eq_info():
     """
         return: a dict
             'ret'
-            'eq_info': [bkb, bmt, tt, vb]
-                each sport obj is a list of tuple(court, statetable)
-                statetable: a 7 * 14 matrix of court state
+            'eq_info': a list of equipment objects
     """
+    session = DBSession()
+    eqs = (
+        session.query(Equipment)
+        .filter(Equipment.estate != EQ_ST_MAINTAIN)
+        .all()
+    )
+    return list(eqs)
 
 def get_court_info():
     """
         return: a dict
             'ret'
-            'court_info': [bkb, bmt, tt, vb]
+            'court_info': [basketball, badminton, ...]
                 each sport obj is a list of tuple(court, statetable)
                 statetable: a 7 * 14 matrix of court state
     """
@@ -164,6 +169,10 @@ def get_court_info():
             ret.append(wd.strftime('%Y-%m-%d')) # 转换为字符串后加入列表中
         return ret
 
+    session = DBSession()
+    basketball = (
+        session.query()
+    )
 
         
       
