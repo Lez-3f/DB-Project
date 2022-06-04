@@ -3,7 +3,7 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 21:21:14
 LastEditors: Zel
-LastEditTime: 2022-06-04 10:42:15
+LastEditTime: 2022-06-04 11:25:22
 '''
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -111,58 +111,6 @@ def remove_user(no):
 # if 'err_msg' in rtn.keys():
 #     return rtn
 
-"""增删改查场地器材信息begin"""
-
-def add_court(no, name, type, info=''):
-    new_court = Court(no, name, info, type)
-    session = DBSession()
-    
-    session.add(new_court)
-    rtn = session_commit(session)
-    if 'err_msg' in rtn.keys():
-        return rtn
-    
-    session.close()
-    rtn['ret'] = SUCCESS_CODE
-    return rtn
-    
-def add_equipment(no, name, num_t):
-    new_eq = Equipment(no, name, num_t)
-    session = DBSession()
-    
-    session.add(new_eq)
-    rtn = session_commit(session)
-    if 'err_msg' in rtn.keys():
-        return rtn
-    
-    session.close()
-    rtn['ret'] = SUCCESS_CODE
-    return rtn
-
-def remove_court(no):
-    session = DBSession()
-    session.query(Court).filter(Court.cno == no).delete()
-    rtn = session_commit(session)
-    if 'err_msg' in rtn.keys():
-        return rtn
-    
-    session.close()
-    rtn['ret'] = SUCCESS_CODE
-    return rtn
-
-def remove_eq(no):
-    session = DBSession()
-    session.query(Equipment).filter(Equipment.eno == no).delete()
-    rtn = session_commit(session)
-    if 'err_msg' in rtn.keys():
-        return rtn
-    
-    session.close()
-    rtn['ret'] = SUCCESS_CODE
-    return rtn    
-
-"""增删改查场地器材信息end"""
-
 """用户通用功能接口begin"""
 def login(no, passwd):
     # 返回登录状态、错误信息、用户信息
@@ -224,6 +172,54 @@ def get_court_info():
 
 """管理员功能接口begin"""
 
+def add_court(no, name, type, info=''):
+    new_court = Court(no, name, info, type)
+    session = DBSession()
+    
+    session.add(new_court)
+    rtn = session_commit(session)
+    if 'err_msg' in rtn.keys():
+        return rtn
+    
+    session.close()
+    rtn['ret'] = SUCCESS_CODE
+    return rtn
+    
+def add_equipment(name, brand, num_t):
+    new_eq = Equipment(name, brand, num_t)
+    session = DBSession()
+    
+    session.add(new_eq)
+    rtn = session_commit(session)
+    if 'err_msg' in rtn.keys():
+        return rtn
+    
+    session.close()
+    rtn['ret'] = SUCCESS_CODE
+    return rtn
+
+def remove_court(no):
+    session = DBSession()
+    session.query(Court).filter(Court.cno == no).delete()
+    rtn = session_commit(session)
+    if 'err_msg' in rtn.keys():
+        return rtn
+    
+    session.close()
+    rtn['ret'] = SUCCESS_CODE
+    return rtn
+
+def remove_eq(no):
+    session = DBSession()
+    session.query(Equipment).filter(Equipment.eno == no).delete()
+    rtn = session_commit(session)
+    if 'err_msg' in rtn.keys():
+        return rtn
+    
+    session.close()
+    rtn['ret'] = SUCCESS_CODE
+    return rtn    
+
 """管理员功能接口end"""
 
 
@@ -246,7 +242,9 @@ def make_reservation(guest, court, begin, end, reason):
 if __name__ == '__main__':
     # add_student(100002, '王五', '男', 'sjkcks', '电机系', '电01', '17818283928')
     # print(remove_user(1))
-    begin = datetime(2022, 6, 3, 9)
-    end = datetime(2022, 6, 3, 11)
+    # begin = datetime(2022, 6, 3, 9)
+    # end = datetime(2022, 6, 3, 11)
     # make_reservation(1, 2001, begin, end, '系队训练')
+    # add_equipment('篮球7号球', 'NIKE', 50)
+    # remove_eq(1)
     pass

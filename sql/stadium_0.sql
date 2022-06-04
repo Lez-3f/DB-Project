@@ -9,12 +9,15 @@ CREATE TABLE IF NOT EXISTS court(
     PRIMARY KEY (cno)
 );
 
+DROP TABLE rental;
+DROP TABLE equipment;
 CREATE TABLE IF NOT EXISTS equipment(
-    eno INT NOT NULL,
+    eno INT NOT NULL AUTO_INCREMENT,
     ename VARCHAR(50) NOT NULL,
+    ebrand VARCHAR(50),
     enum_t INT NOT NULL,
-    enum_a INT NOT NULL,
-    estate INT NOT NULL,
+    enum_a INT NOT NULL DEFAULT 0,
+    estate INT NOT NULL DEFAULT 0,
     PRIMARY KEY (eno)
 );
 

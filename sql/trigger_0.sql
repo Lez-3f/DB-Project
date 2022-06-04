@@ -22,7 +22,6 @@ WHERE rcourt=NEW.cno AND NEW.cstate=2;
 
 -- lack of equipments
 DROP TRIGGER IF EXISTS eq_lack;
-DELIMITER $
 CREATE TRIGGER eq_lack 
 BEFORE UPDATE ON equipment
 FOR EACH ROW
@@ -30,4 +29,14 @@ BEGIN
     IF (NEW.enum_a = 0)
     THEN SET NEW.estate = 1;
     END IF;
-END $
+END;
+
+DROP TRIGGER IF EXISTS eq_num_a_incre;
+CREATE TRIGGER eq_num_a_incre
+BEFORE INSERT ON equipment
+FOR EACH ROW
+BEGIN
+    IF (NEW.enum_a = 0) THEN
+    SET NEW.enum_a = NEW.enum_t;
+    END IF;
+END;

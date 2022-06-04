@@ -95,13 +95,14 @@ class Equipment(Base):
     
     eno = Column(Integer, primary_key=True)
     ename = Column(String)
+    ebrand = Column(String, nullable=True)
     enum_t = Column(Integer)
     enum_a = Column(Integer)
     estate = Column(Integer)
     
-    def __init__(self, no, name, num_t):
-        self.eno = no
+    def __init__(self, name, brand, num_t):
         self.ename = name
+        self.ebrand = brand
         self.enum_t = num_t
         self.enum_a = num_t # 初始认为可用数量和总数量相等
         self.estate = EQ_ST_AVAILABLE
