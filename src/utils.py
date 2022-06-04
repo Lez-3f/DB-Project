@@ -3,7 +3,7 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 22:08:18
 LastEditors: Zel
-LastEditTime: 2022-06-03 22:56:50
+LastEditTime: 2022-06-04 10:48:11
 '''
 from datetime import datetime
 from random import randint
@@ -28,7 +28,7 @@ CT_ST_OCCUPIED = 1
 CT_ST_MAINTAIN = 2
 
 EQ_ST_AVAILABLE = 0
-EQ_ST_OCCUPIED = 1
+EQ_ST_LACK = 1
 EQ_ST_MAINTAIN = 2
 
 RSV_ST_WAIT = 0
