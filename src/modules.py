@@ -147,8 +147,9 @@ class Rental(Base):
     
     def __init__(self, guest, eq, num):
         self.rtdraw = datetime.now()
-        self.guest = guest
-        self.rno = get_order_no(self.guest, self.rtdraw)
+        self.rtreturn = datetime(2050, 1, 1, 0)
+        self.rtguest = guest
+        self.rtno = get_order_no(self.rtguest, self.rtdraw)
         
         self.rteq = eq
         self.rtnum = num

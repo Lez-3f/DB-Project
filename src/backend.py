@@ -3,7 +3,7 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 21:21:14
 LastEditors: Zel
-LastEditTime: 2022-06-06 23:58:38
+LastEditTime: 2022-06-07 00:24:05
 '''
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -303,13 +303,19 @@ def start_rental(guest, eq, num):
     session.query(Equipment)\
            .filter(Equipment.eno == eq)\
            .update({'enum_a': Equipment.enum_a - num}) # 更新数量
+    rtn = session_commit(session)
+    if 'err_msg' in rtn.keys():
+        return rtn
     
     session.close()
     rtn['ret'] = SUCCESS_CODE
     return rtn
 
-"""管理员功能接口end"""
+def end_rental(rno):
+    pass
+    
 
+"""管理员功能接口end"""
 
 """老师学生功能接口begin"""
 def make_reservation(guest, court, begin, end, reason):
@@ -379,5 +385,6 @@ if __name__ == '__main__':
     # bg2 = datetime(2022, 6, 7, 10)
     # ed2 = datetime(2022, 6, 7, 12)
     # print(time_coincidence(bg1, ed2, ed1, ed2))
+    start_rental(1, 1, 1)
     
     pass
