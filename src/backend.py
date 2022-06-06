@@ -3,17 +3,18 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 21:21:14
 LastEditors: Zel
-LastEditTime: 2022-06-04 12:28:51
+LastEditTime: 2022-06-06 23:58:38
 '''
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import func
 
-from modules import Court, Equipment, Reservation, User, Admin, Student, Teacher
-from utils import EQ_ST_MAINTAIN, FAIL_CODE, NORMAL_STU, SUCCESS_CODE, TALENT_STU
+from modules import Court, Equipment, Rental, Reservation, User, Admin, Student, Teacher
+from utils import EQ_ST_MAINTAIN, FAIL_CODE, NORMAL_STU, RSV_ST_PASS, RSV_ST_REJ, RSV_ST_WAIT, SUCCESS_CODE, TALENT_STU
 from utils import BASKETBALL, BADMINTON, TABLETENNIS, VOLLEYBALL
 
 from utils import session_commit
+from utils import sports
 
 from datetime import date, datetime, timedelta
 from time import strftime
@@ -133,7 +134,7 @@ def login(no, passwd):
     rtn['user'] = user
     return rtn
 
-def get_eq_info():
+def get_eqs_info():
     """
         return: a dict
             'ret'
@@ -147,34 +148,58 @@ def get_eq_info():
     )
     return list(eqs)
 
+def get_eq(no):
+    session = DBSession()
+    eq = (
+        session.query(Equipment)
+        .filter(Equipment.eno == no)
+        .one_or_none()
+    )
+    return eq
+    
+
 def get_court_info():
     """
         return: a dict
             'ret'
             'court_info': [basketball, badminton, ...]
-                each sport obj is a list of tuple(court, statetable)
-                statetable: a 7 * 14 matrix of court state
+                each sport obj is a list of court
     """
-    
-    def get_this_week():
-        today = datetime.today()
-        today = datetime.strptime(today, '%Y-%m-%d')    # 将字符串格式化为datetime类型
-        weekday = today.weekday()   # 获取输入的日期是周几：int 周一为0
-        # print(weekday)
-        ret = list()
-        # 这周开始的时间：这周开始的日期为今天的日期减去周几，如周一的减0，所以开始日期就是输入日期了
-        start_day = today - timedelta(weekday)
-        for i in range(7):
-            wd = start_day + timedelta(i)   # 从开始日期加一整周的时间
-            ret.append(wd.strftime('%Y-%m-%d')) # 转换为字符串后加入列表中
-        return ret
-
     session = DBSession()
-    basketball = (
-        session.query()
-    )
-
         
+    ct_rsv = (
+        session.query( Court.cno, Court.cname, Reservation.rguest, Reservation.rbegin, Reservation.rend)
+        .join(Reservation, Reservation.rcourt == Court.cno)
+        .filter(Reservation.rstate == RSV_ST_PASS)
+        .all()
+    )
+    
+    return ct_rsv
+
+def get_court_rsv_pass(no):
+    session = DBSession()
+    
+    ct_rsv = (
+        session.query(Reservation)
+        .filter(Reservation.rcourt == no)
+        .filter(Reservation.rstate == RSV_ST_PASS)
+        .all()
+    )
+    
+    return ct_rsv
+
+def get_court_rsv_wait_or_pass(no):
+    session = DBSession()
+    
+    ct_rsv = (
+        session.query(Reservation)
+        .filter(Reservation.rcourt == no)
+        .filter(Reservation.rstate < 2)
+        .all()
+    )
+    
+    return ct_rsv
+    
       
 """用户通用功能接口end"""
 
@@ -229,12 +254,98 @@ def remove_eq(no):
     rtn['ret'] = SUCCESS_CODE
     return rtn    
 
+def pass_reservation(no):
+    session = DBSession()
+    
+    session.query(Reservation)\
+    .filter(Reservation.rno == no)\
+    .update({'rstate' : RSV_ST_PASS})
+    rtn = session_commit(session)
+    if 'err_msg' in rtn.keys():
+        return rtn
+    
+    session.close()
+    rtn['ret'] = SUCCESS_CODE
+    return rtn
+
+def reject_reservation(no):
+    session = DBSession()
+    
+    session.query(Reservation)\
+    .filter(Reservation.rno == no)\
+    .update({'rstate' : RSV_ST_REJ})
+    rtn = session_commit(session)
+    if 'err_msg' in rtn.keys():
+        return rtn
+    
+    session.close()
+    rtn['ret'] = SUCCESS_CODE
+    return rtn   
+
+def start_rental(guest, eq, num):
+    
+    rtn = {}
+    new_rental = Rental(guest, eq, num)
+    session = DBSession()
+    session.add(new_rental)
+    rtn = session_commit(session)
+    if 'err_msg' in rtn.keys():
+        return rtn
+    
+    num_a = session.query(Equipment.enum_a)\
+           .filter(Equipment.eno == eq)\
+           .one_or_none()[0]
+    if num > num_a:
+        rtn['ret'] = FAIL_CODE
+        rtn['err_msg'] = '器材数量不足'
+        return rtn
+    
+    session.query(Equipment)\
+           .filter(Equipment.eno == eq)\
+           .update({'enum_a': Equipment.enum_a - num}) # 更新数量
+    
+    session.close()
+    rtn['ret'] = SUCCESS_CODE
+    return rtn
+
 """管理员功能接口end"""
 
 
 """老师学生功能接口begin"""
 def make_reservation(guest, court, begin, end, reason):
-    new_rsv = Reservation(guest, court, begin, end, reason)
+    
+    def time_coincidence(bg1:datetime, ed1:datetime, bg2:datetime, ed2:datetime)->bool:
+        return not( (bg1 >= ed2) or (bg2 >= ed1))
+    
+    def is_talent_stu(guest):
+        session = DBSession()
+        rank = (
+            session.query(Student.srank)
+            .filter(Student.sno == guest)
+            .one_or_none()
+        )
+        # print(rank)
+        if rank != None and rank[0] == TALENT_STU:
+            return True
+        else: return False
+    
+    rtn = {}
+    if end < begin:
+        rtn['ret'] = FAIL_CODE
+        rtn['err_code'] = '时间段错误'
+        return rtn
+        
+    ct_rsv = get_court_rsv_wait_or_pass(court)
+    for rsv in ct_rsv:
+        rsv:Reservation
+        if time_coincidence(rsv.rbegin, rsv.rend, begin, end):
+            rtn['ret'] = FAIL_CODE
+            rtn['err_code'] = '时间段已存在预约'
+            return  rtn
+    
+    state = RSV_ST_WAIT
+    if is_talent_stu(guest): state = RSV_ST_PASS # 体育生不用审批
+    new_rsv = Reservation(guest, court, begin, end, reason, state)
     
     session = DBSession()
     session.add(new_rsv)
@@ -244,16 +355,29 @@ def make_reservation(guest, court, begin, end, reason):
     
     session.close()
     rtn['ret'] = SUCCESS_CODE
-    return rtn 
+    return rtn
+
 """老师学生功能接口end"""
 
 ## test
 if __name__ == '__main__':
-    # add_student(100002, '王五', '男', 'sjkcks', '电机系', '电01', '17818283928')
+    # add_student(100000, '测试特长生', '男', '123', '开发组', '开发01', '11111111111', TALENT_STU)
     # print(remove_user(1))
-    # begin = datetime(2022, 6, 3, 9)
-    # end = datetime(2022, 6, 3, 11)
-    # make_reservation(1, 2001, begin, end, '系队训练')
+    # make_reservation(100000, 2002,datetime(2022, 6, 7, 9), datetime(2022, 6, 7, 11), '练习')
     # add_equipment('篮球7号球', 'NIKE', 50)
     # remove_eq(1)
+    # pass_reservation(20220603210958000001245)
+    # pass_reservation(20220606104138000002142)
+    # pass_reservation(20220606105424000004756)
+    # reject_reservation(20220606112107100000738)
+    # print(get_court_info())
+    
+    # def time_coincidence(bg1:datetime, ed1:datetime, bg2:datetime, ed2:datetime)->bool:
+    #     return not( (bg1 >= ed2) or (bg2 >= ed1)) 
+    # bg1 = datetime(2022, 6, 7, 9)
+    # ed1 = datetime(2022, 6, 7, 11)
+    # bg2 = datetime(2022, 6, 7, 10)
+    # ed2 = datetime(2022, 6, 7, 12)
+    # print(time_coincidence(bg1, ed2, ed1, ed2))
+    
     pass

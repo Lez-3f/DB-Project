@@ -120,7 +120,7 @@ class Reservation(Base):
     rstate = Column(Integer)
     rreason = Column(Text)
     
-    def __init__(self, guest, court, begin, end, reason):
+    def __init__(self, guest, court, begin, end, reason, state=RSV_ST_PASS):
         
         self.rguest = guest
         self.rtime = datetime.now()
@@ -130,7 +130,7 @@ class Reservation(Base):
         self.rtime = datetime.now()
         self.rbegin = begin
         self.rend = end
-        self.rstate = RSV_ST_WAIT
+        self.rstate = state
         self.rreason = reason
         
 class Rental(Base):
@@ -145,7 +145,7 @@ class Rental(Base):
     rtnum = Column(Integer)
     rtstate = Column(Integer)
     
-    def __init__(self, guest, eq, draw, num):
+    def __init__(self, guest, eq, num):
         self.rtdraw = datetime.now()
         self.guest = guest
         self.rno = get_order_no(self.guest, self.rtdraw)
