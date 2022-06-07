@@ -3,7 +3,7 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 22:08:18
 LastEditors: Zel
-LastEditTime: 2022-06-04 15:42:27
+LastEditTime: 2022-06-07 00:58:52
 '''
 from datetime import datetime
 from random import randint
@@ -24,8 +24,7 @@ FOOTBALL = 4
 TENNIS = 5
 
 CT_ST_AVAILABLE = 0
-CT_ST_OCCUPIED = 1
-CT_ST_MAINTAIN = 2
+CT_ST_MAINTAIN = 1
 
 EQ_ST_AVAILABLE = 0
 EQ_ST_LACK = 1
@@ -40,6 +39,8 @@ RSV_ST_UNVALUE = 999
 RT_ST_DRAW = 0
 RT_ST_RET = 1
 RT_ST_UNVALUE = 999
+
+LEGAL_TIME = (9, 21)
 
 sports = ['篮球', '羽毛球', '乒乓球', '排球', '网球']
 

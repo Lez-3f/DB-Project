@@ -3,14 +3,15 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 21:21:14
 LastEditors: Zel
-LastEditTime: 2022-06-07 00:24:05
+LastEditTime: 2022-06-07 01:06:17
 '''
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import func
+from sqlalchemy import desc
 
 from modules import Court, Equipment, Rental, Reservation, User, Admin, Student, Teacher
-from utils import EQ_ST_MAINTAIN, FAIL_CODE, NORMAL_STU, RSV_ST_PASS, RSV_ST_REJ, RSV_ST_WAIT, SUCCESS_CODE, TALENT_STU
+from utils import CT_ST_MAINTAIN, EQ_ST_MAINTAIN, FAIL_CODE, LEGAL_TIME, NORMAL_STU, RSV_ST_PASS, RSV_ST_REJ, RSV_ST_WAIT, RT_ST_RET, SUCCESS_CODE, TALENT_STU
 from utils import BASKETBALL, BADMINTON, TABLETENNIS, VOLLEYBALL
 
 from utils import session_commit
@@ -22,7 +23,7 @@ from time import strftime
 engine = create_engine('mysql+pymysql://root:s6d5v15sa1dva5s6d@localhost:3306/db_proj_test?charset=utf8') # 引擎
 DBSession = sessionmaker(bind=engine) # 会话
 
-newUser = User(1, "祝尔乐", '男', 'xxx98765431')
+# newUser = User(1, "祝尔乐", '男', 'xxx98765431')
 
 """增删改查用户信息begin"""
 
@@ -177,6 +178,7 @@ def get_court_info():
     return ct_rsv
 
 def get_court_rsv_pass(no):
+    rtn = {}
     session = DBSession()
     
     ct_rsv = (
@@ -188,7 +190,21 @@ def get_court_rsv_pass(no):
     
     return ct_rsv
 
+def get_court_rsv_wait(no):
+    rtn = {}
+    session = DBSession()
+    
+    ct_rsv = (
+        session.query(Reservation)
+        .filter(Reservation.rcourt == no)
+        .filter(Reservation.rstate == RSV_ST_WAIT)
+        .all()
+    )
+    
+    return ct_rsv
+
 def get_court_rsv_wait_or_pass(no):
+    rtn = {}
     session = DBSession()
     
     ct_rsv = (
@@ -207,6 +223,7 @@ def get_court_rsv_wait_or_pass(no):
 """管理员功能接口begin"""
 
 def add_court(no, name, type, info=''):
+    rtn = {}
     new_court = Court(no, name, info, type)
     session = DBSession()
     
@@ -220,6 +237,7 @@ def add_court(no, name, type, info=''):
     return rtn
     
 def add_equipment(name, brand, num_t):
+    rtn = {}
     new_eq = Equipment(name, brand, num_t)
     session = DBSession()
     
@@ -233,6 +251,7 @@ def add_equipment(name, brand, num_t):
     return rtn
 
 def remove_court(no):
+    rtn = {}
     session = DBSession()
     session.query(Court).filter(Court.cno == no).delete()
     rtn = session_commit(session)
@@ -243,7 +262,23 @@ def remove_court(no):
     rtn['ret'] = SUCCESS_CODE
     return rtn
 
+def set_court(no, st:int):
+    rtn = {}
+    session = DBSession()
+    session.query(Court).filter(Court.cno == no)\
+        .update({'cstate': st})
+    rtn = session_commit(session)
+    if 'err_msg' in rtn.keys():
+        return rtn
+    
+    session.close()
+    rtn['ret'] = SUCCESS_CODE
+    return rtn
+
+    
+
 def remove_eq(no):
+    rtn = {}
     session = DBSession()
     session.query(Equipment).filter(Equipment.eno == no).delete()
     rtn = session_commit(session)
@@ -255,6 +290,8 @@ def remove_eq(no):
     return rtn    
 
 def pass_reservation(no):
+    
+    rtn = {}
     session = DBSession()
     
     session.query(Reservation)\
@@ -269,6 +306,8 @@ def pass_reservation(no):
     return rtn
 
 def reject_reservation(no):
+    
+    rtn = {}
     session = DBSession()
     
     session.query(Reservation)\
@@ -300,6 +339,7 @@ def start_rental(guest, eq, num):
         rtn['err_msg'] = '器材数量不足'
         return rtn
     
+    print(num_a)
     session.query(Equipment)\
            .filter(Equipment.eno == eq)\
            .update({'enum_a': Equipment.enum_a - num}) # 更新数量
@@ -311,14 +351,39 @@ def start_rental(guest, eq, num):
     rtn['ret'] = SUCCESS_CODE
     return rtn
 
-def end_rental(rno):
-    pass
+def end_rental(no):
+    
+    rtn = {}
+    session = DBSession()
+    eq, num = session.query(Rental.rteq, Rental.rtnum)\
+        .filter(Rental.rtno == no)\
+        .one_or_none()
+    print(eq, num)
+        
+    session.query(Rental)\
+           .filter(Rental.rtno == no)\
+           .update({'rtstate': RT_ST_RET})
+    rtn = session_commit(session)
+    if 'err_msg' in rtn.keys():
+        return rtn
+           
+    session.query(Equipment)\
+           .filter(Equipment.eno == eq)\
+           .update({'enum_a': Equipment.enum_a + num})
+    rtn = session_commit(session)
+    if 'err_msg' in rtn.keys():
+        return rtn
+    
+    session.close()
+    rtn['ret'] = SUCCESS_CODE
+    return rtn
+    
     
 
 """管理员功能接口end"""
 
 """老师学生功能接口begin"""
-def make_reservation(guest, court, begin, end, reason):
+def make_reservation(guest, court, begin:datetime, end:datetime, reason):
     
     def time_coincidence(bg1:datetime, ed1:datetime, bg2:datetime, ed2:datetime)->bool:
         return not( (bg1 >= ed2) or (bg2 >= ed1))
@@ -334,9 +399,12 @@ def make_reservation(guest, court, begin, end, reason):
         if rank != None and rank[0] == TALENT_STU:
             return True
         else: return False
+        
+    def time_legal(begin:datetime, end:datetime)->bool:
+        return end < begin and begin.hour >= LEGAL_TIME[0] and end.hour <= LEGAL_TIME[1]
     
     rtn = {}
-    if end < begin:
+    if not time_legal(begin, end):
         rtn['ret'] = FAIL_CODE
         rtn['err_code'] = '时间段错误'
         return rtn
@@ -363,6 +431,16 @@ def make_reservation(guest, court, begin, end, reason):
     rtn['ret'] = SUCCESS_CODE
     return rtn
 
+def get_rsv_all(no):
+    session = DBSession()
+    
+    ct_rsv = (
+        session.query(Reservation)
+        .filter(Reservation.rguest == no)
+        .order_by(desc(Reservation.rtime))
+        .all()
+    )
+
 """老师学生功能接口end"""
 
 ## test
@@ -385,6 +463,8 @@ if __name__ == '__main__':
     # bg2 = datetime(2022, 6, 7, 10)
     # ed2 = datetime(2022, 6, 7, 12)
     # print(time_coincidence(bg1, ed2, ed1, ed2))
-    start_rental(1, 1, 1)
+    # print( start_rental(1, 1, 1) )
+    # print(end_rental(20220607003027000001100))
+    print(set_court(1, CT_ST_MAINTAIN))
     
     pass
