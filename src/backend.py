@@ -3,7 +3,7 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 21:21:14
 LastEditors: Zel
-LastEditTime: 2022-06-07 01:06:17
+LastEditTime: 2022-06-08 15:55:37
 '''
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -13,6 +13,7 @@ from sqlalchemy import desc
 from modules import Court, Equipment, Rental, Reservation, User, Admin, Student, Teacher
 from utils import CT_ST_MAINTAIN, EQ_ST_MAINTAIN, FAIL_CODE, LEGAL_TIME, NORMAL_STU, RSV_ST_PASS, RSV_ST_REJ, RSV_ST_WAIT, RT_ST_RET, SUCCESS_CODE, TALENT_STU
 from utils import BASKETBALL, BADMINTON, TABLETENNIS, VOLLEYBALL
+from utils import TEACHER, STUDENT, ADMIN
 
 from utils import session_commit
 from utils import sports
@@ -119,20 +120,36 @@ def login(no, passwd):
     rtn = {}
     
     session = DBSession()
-    user:User = session.query(User).fliter(User.uno == no).first()
+    user:User = session.query(User).filter(User.uno == no).first()
     
     if not user:
         rtn['ret'] = FAIL_CODE
         rtn['err_msg'] = '用户不存在'
         return rtn
-        
+    
+    user_type = 0
+    user_sp = session.query(Admin)\
+                .filter(Admin.ano == no)\
+                .first()
+    if not user_sp:
+        user_sp = session.query(Student)\
+            .filter(Student.sno == no)\
+            .first()
+        user_type = 1
+    if not user_sp:
+        user_sp = session.query(Teacher)\
+            .filter(Teacher.sno == no)\
+            .first()
+        user_type = 2
+
     if user.upasswd != passwd:
         rtn['ret'] = FAIL_CODE
         rtn['err_msg'] = '用户密码错误'
         return rtn
     
     rtn['ret'] = SUCCESS_CODE
-    rtn['user'] = user
+    rtn['user'] = (user_type, user, user_sp)
+
     return rtn
 
 def get_eqs_info():

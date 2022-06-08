@@ -3,7 +3,7 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 22:08:18
 LastEditors: Zel
-LastEditTime: 2022-06-07 00:58:52
+LastEditTime: 2022-06-08 15:54:42
 '''
 from datetime import datetime
 from random import randint
@@ -12,6 +12,8 @@ FAIL_CODE = 1
 
 MALE = 1
 FEMALE = 0
+
+ADMIN, STUDENT, TEACHER = 0, 1, 2
 
 NORMAL_STU = 0
 TALENT_STU = 1
