@@ -3,11 +3,13 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-29 17:51:22
 LastEditors: Zel
-LastEditTime: 2022-06-08 16:55:58
+LastEditTime: 2022-06-08 17:32:07
 '''
 import backend as bk
 import tkinter as tk
 from PIL import ImageTk, Image
+from tkinter import ttk
+
 import time
 
 from utils import ADMIN, FAIL_CODE, STUDENT, SUCCESS_CODE
@@ -15,11 +17,52 @@ from utils import ADMIN, FAIL_CODE, STUDENT, SUCCESS_CODE
 from modules import Court, Equipment, Rental, Reservation, User, Admin, Student, Teacher
 
 main_bg_path = r'figures/main_bgr.gif'
-rsv_bt_img_path = r'figures/court.gif'
+rsv_bt_img_path = r'figures/basket.gif'
 rt_bt_img_path = r'figures/ball.gif'
 user_bt_img_path = r'figures/account.gif'
 app_name = "T大体育设施管理系统"
 bg_w, bg_h = (685, 386)
+
+class ToolTip(object):
+    
+    # this class is copied from https://www.coder.work/article/363943
+
+    def __init__(self, widget):
+        self.widget = widget
+        self.tipwindow = None
+        self.id = None
+        self.x = self.y = 0
+
+    def showtip(self, text):
+        "Display text in tooltip window"
+        self.text = text
+        if self.tipwindow or not self.text:
+            return
+        x, y, cx, cy = self.widget.bbox("insert")
+        x = x + self.widget.winfo_rootx() + 57
+        y = y + cy + self.widget.winfo_rooty() +27
+        self.tipwindow = tw = tk.Toplevel(self.widget)
+        tw.wm_overrideredirect(1)
+        tw.wm_geometry("+%d+%d" % (x, y))
+        label = tk.Label(tw, text=self.text, justify=tk.LEFT,
+                      background="#ffffe0", relief=tk.SOLID, borderwidth=1,
+                      font=("tahoma", "8", "normal"))
+        label.pack(ipadx=1)
+
+    def hidetip(self):
+        tw = self.tipwindow
+        self.tipwindow = None
+        if tw:
+            tw.destroy()
+
+def CreateToolTip(widget, text):
+    toolTip = ToolTip(widget)
+    def enter(event):
+        toolTip.showtip(text)
+    def leave(event):
+        toolTip.hidetip()
+    widget.bind('<Enter>', enter)
+    widget.bind('<Leave>', leave)
 
 class App(tk.Frame):
     
@@ -37,6 +80,9 @@ class App(tk.Frame):
         
         self.about_bt = tk.Button(self, text='关于', command=self.show_about)
         self.about_bt.place(x=bg_w/2-100, y=bg_h/2, width=200, height=30)
+        
+        self.quit_bt = tk.Button(self, text='退出', command=self.quit)
+        self.quit_bt.place(x = bg_w/2 + 250, y=bg_h/2 + 150, width=50, height=20)
     
     def show_about(self):
         self.windows_about = tk.Tk()
@@ -111,15 +157,32 @@ class App(tk.Frame):
         self.rt_bt_img = ImageTk.PhotoImage(image=Image.open(rt_bt_img_path))
         self.user_bt_img = ImageTk.PhotoImage(image=Image.open(user_bt_img_path))
         
-        self.rsv_bt = tk.Button(self, text='场地预约', font=('Arial', 20), fg = 'black', image=self.rsv_bt_img, compound=tk.CENTER)
-        self.rsv_bt.place(x=bg_w/2-250, y=bg_h/2-50, width=150, height=150)
+        self.rsv_bt = tk.Button(self, image=self.rsv_bt_img, compound=tk.CENTER,\
+            command=self.reservation_page)
+        self.rsv_bt.place(x=bg_w/2-200, y=bg_h/2-50, width=100, height=100)
+        CreateToolTip(self.rsv_bt, text = '场地预约')
         
-        self.rt_bt = tk.Button(self, text='器材租借', font=('Arial', 20), fg = 'black', image=self.rt_bt_img, compound=tk.CENTER)
-        self.rt_bt.place(x=bg_w/2-75, y=bg_h/2-50, width=150, height=150)
+        self.rt_bt = tk.Button(self, image=self.rt_bt_img, compound=tk.CENTER,\
+            )
+        self.rt_bt.place(x=bg_w/2-50, y=bg_h/2-50, width=100, height=100)
+        CreateToolTip(self.rt_bt, text = '器材租借')
         
-        self.user_bt = tk.Button(self, text='个人信息', font=('Arial', 20), fg = 'white', image=self.user_bt_img, compound=tk.CENTER)
-        self.user_bt.place(x=bg_w/2+100, y=bg_h/2-50, width=150, height=150)
+        self.user_bt = tk.Button(self, image=self.user_bt_img, compound=tk.CENTER,\
+            )
+        self.user_bt.place(x=bg_w/2+100, y=bg_h/2-50, width=100, height=100)
+        CreateToolTip(self.user_bt, text = '个人信息')
         
+        pass
+    
+    def reservation_page(self):
+        tk
+        print('预约页面')
+        pass
+    
+    def rental_page(self):
+        pass
+    
+    def user_page(self):
         pass
 
 def run_app():
