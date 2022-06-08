@@ -3,18 +3,20 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-29 17:51:22
 LastEditors: Zel
-LastEditTime: 2022-06-08 17:32:07
+LastEditTime: 2022-06-08 21:10:34
 '''
 import backend as bk
 import tkinter as tk
 from PIL import ImageTk, Image
-from tkinter import ttk
+from tkinter import LEFT, ttk
 
 import time
 
 from utils import ADMIN, FAIL_CODE, STUDENT, SUCCESS_CODE
 
 from modules import Court, Equipment, Rental, Reservation, User, Admin, Student, Teacher
+
+TEST:bool = True
 
 main_bg_path = r'figures/main_bgr.gif'
 rsv_bt_img_path = r'figures/basket.gif'
@@ -81,8 +83,15 @@ class App(tk.Frame):
         self.about_bt = tk.Button(self, text='关于', command=self.show_about)
         self.about_bt.place(x=bg_w/2-100, y=bg_h/2, width=200, height=30)
         
+        if TEST:
+            self.test_bt = tk.Button(self, text='测试', command=self.test)
+            self.test_bt.place(x=bg_w/2-100, y=bg_h/2+50, width=200, height=30)
+        
         self.quit_bt = tk.Button(self, text='退出', command=self.quit)
         self.quit_bt.place(x = bg_w/2 + 250, y=bg_h/2 + 150, width=50, height=20)
+    
+    def test(self):
+        return self.view_info(['eno', 'ename', 'ebrand', 'enum_a'], ['编号','器材','品牌', '可用数量'], bk.get_eqs_info(), '器材信息表')
     
     def show_about(self):
         self.windows_about = tk.Tk()
@@ -175,7 +184,7 @@ class App(tk.Frame):
         pass
     
     def reservation_page(self):
-        tk
+        
         print('预约页面')
         pass
     
@@ -184,6 +193,92 @@ class App(tk.Frame):
     
     def user_page(self):
         pass
+    
+    ## reservation 
+    def view_court_info(self):
+        pass
+    
+    def manage_court_info(self):
+        pass
+
+    def check_reservation(self):
+        pass
+    
+    def view_info(self, cols_model, cols_print, module_list, window_name):
+        
+        col_num = len(cols_model)
+        row_num = len(module_list)
+        
+        view_window = tk.Tk()
+        view_window.title(window_name)
+        
+        frame_search = tk.Frame(view_window)
+        search_col = 0
+        def choose(*args):
+            search_col = cols_model[cols_print.index(comboxlist.get())]
+        print(search_col)
+            
+        comvalue=tk.StringVar() #窗体自带的文本，新建一个值
+        comboxlist=ttk.Combobox(frame_search, textvariable=comvalue)
+        comboxlist["values"]=cols_print
+        comboxlist.current(0)   #选择第一个
+        comboxlist.bind("<<ComboboxSelected>>", func=choose)
+        comboxlist.pack(side=tk.LEFT)
+
+        
+        entry_in = tk.Entry(frame_search, width=10)
+        entry_in.pack(side=tk.LEFT)
+        
+        # 用下滑栏搜索
+        def show_table_sel():
+            info = entry_in.get()
+            # 清空数据
+            data = table
+            if not info:
+                return
+                
+            else:
+                module_list_sel = []
+                for md in module_list:
+                    if info not in str(getattr(md, search_col)):
+                        module_list_sel.append(md)
+                        table.delete('', values=[getattr(md, col, None) for col in cols_model])
+                        
+        bt_search = tk.Button(frame_search, text="查询", width=10, command=show_table_sel)
+        bt_search.pack(side=tk.LEFT)
+        
+        frame_search.pack()
+            
+        frame_table = tk.Frame(view_window)
+        table = ttk.Treeview(frame_table, height=10, columns=cols_model, show='headings')
+        
+        for j in range(col_num):
+            table.column(str(cols_model[j]), width=100, anchor='center')
+            table.heading(cols_model[j], text=cols_print[j])
+
+        for i in range(row_num):
+            table.insert('', i, values=[getattr(module_list[i], col, None) for col in cols_model])
+
+        def on_click(event):
+            item = table.selection()[0]
+            print(table.item(item, "value"))
+            
+        table.bind('<Double-1>', on_click)
+        table.pack()
+        frame_table.pack()
+
+        vbar = ttk.Scrollbar(frame_table, orient=tk.VERTICAL, command=table.yview)
+        table.configure(yscrollcommand=vbar.set)
+        
+        pass
+    
+    ## rental
+    
+    ## user
+    
+    
+     
+    
 
 def run_app():
     root = tk.Tk()
@@ -203,14 +298,14 @@ def run_app():
 #     canvas.pack()
 #     root.mainloop()
     
-
-
-if __name__ == '__main__':
-    # run_app()
+def main():
     root = tk.Tk()
     root.title(app_name)   
     app = App(root)
     root.mainloop()
-    # test()
+    
+
+if __name__ == '__main__':
+    main()
     pass
 
