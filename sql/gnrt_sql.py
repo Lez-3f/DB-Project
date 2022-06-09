@@ -3,10 +3,11 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-06-03 20:24:43
 LastEditors: Zel
-LastEditTime: 2022-06-03 20:52:00
+LastEditTime: 2022-06-09 15:08:59
 '''
 with open('sql/add_court.txt', 'w') as f:
     f.write('INSERT INTO\ncourt(cno, cname, cinfo, ctype)\nVALUE\n')
+    j = 0
     for i in range(8):
         f.write( '({0}, \'室内篮球场-{1}\', \'位于篮球馆，有灯光\', 0),\n'.format(i+1, str(i+1).rjust(2,'0')))
     for i in range(24):

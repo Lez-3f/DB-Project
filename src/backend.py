@@ -3,7 +3,7 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 21:21:14
 LastEditors: Zel
-LastEditTime: 2022-06-09 13:57:52
+LastEditTime: 2022-06-09 17:16:19
 '''
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -47,7 +47,7 @@ def add_admin(no, name, sex, passwd):
     rtn['ret'] = SUCCESS_CODE
     return rtn
     
-def add_student(no, name, sex, passwd, dept, clazz, phnum, rank=0):
+def add_student(no, name, sex, passwd, clazz, dept,  phnum, rank=0):
     new_user = User(no, name, sex, passwd)
     new_student = Student(no, dept, clazz, phnum, rank)
     
@@ -275,9 +275,9 @@ def add_court(cno, cname, ctype, cinfo=''):
     rtn['ret'] = SUCCESS_CODE
     return rtn
     
-def add_equipment(name, brand, num_t):
+def add_equipment(eno, ename, ebrand, enum_t):
     rtn = {}
-    new_eq = Equipment(name, brand, num_t)
+    new_eq = Equipment(eno, ename, ebrand, enum_t)
     session = DBSession()
     
     session.add(new_eq)
@@ -426,7 +426,7 @@ def make_reservation(guest, court, begin:datetime, end:datetime, reason):
         else: return False
         
     def time_legal(begin:datetime, end:datetime)->bool:
-        return end < begin and begin.hour >= LEGAL_TIME[0] and end.hour <= LEGAL_TIME[1]
+        return end > begin and begin.hour >= LEGAL_TIME[0] and end.hour <= LEGAL_TIME[1]
     
     rtn = {}
     if not time_legal(begin, end):
@@ -471,8 +471,18 @@ def get_rsv_all(no):
 ## test
 if __name__ == '__main__':
     # add_student(100000, '测试特长生', '男', '123', '开发组', '开发01', '11111111111', TALENT_STU)
+    remove_user(100002)
     # print(remove_user(1))
-    # make_reservation(100000, 2002,datetime(2022, 6, 7, 9), datetime(2022, 6, 7, 11), '练习')
+    
+    print(make_reservation(10001, 1, datetime(2022, 6, 11, hour=9), datetime(2022, 6, 11, hour=11), '练习'))
+    print(make_reservation(20001, 1, datetime(2022, 6, 11, hour=13), datetime(2022, 6, 11, hour=16), '练习'))
+    
+    print(make_reservation(10003, 1, datetime(2022, 6, 12, hour=10), datetime(2022, 6, 12, hour=12), '练习'))
+    print(make_reservation(10004, 1, datetime(2022, 6, 12, hour=15), datetime(2022, 6, 12, hour=17), '练习'))
+    print(make_reservation(10005, 1, datetime(2022, 6, 12, hour=19), datetime(2022, 6, 12, hour=21), '练习'))
+    print(make_reservation(20002, 1, datetime(2022, 6, 13, hour=14), datetime(2022, 6, 13, hour=18), '练习'))
+    print(make_reservation(10007, 1, datetime(2022, 6, 14, hour=14), datetime(2022, 6, 14, hour=17), '练习'))
+    
     # add_equipment('篮球7号球', 'NIKE', 50)
     # remove_eq(1)
     # pass_reservation(20220603210958000001245)
@@ -490,6 +500,6 @@ if __name__ == '__main__':
     # print(time_coincidence(bg1, ed2, ed1, ed2))
     # print( start_rental(1, 1, 1) )
     # print(end_rental(20220607003027000001100))
-    print(set_court(1, 'cstate', CT_ST_MAINTAIN))
+    # print(set_court(1, 'cstate', CT_ST_MAINTAIN))
     
     pass

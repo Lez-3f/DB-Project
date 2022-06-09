@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS court(
 DROP TABLE rental;
 DROP TABLE equipment;
 CREATE TABLE IF NOT EXISTS equipment(
-    eno INT NOT NULL AUTO_INCREMENT,
+    eno INT NOT NULL,
     ename VARCHAR(50) NOT NULL,
     ebrand VARCHAR(50),
     enum_t INT NOT NULL,

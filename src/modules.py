@@ -100,7 +100,9 @@ class Equipment(Base):
     enum_a = Column(Integer)
     estate = Column(Integer)
     
-    def __init__(self, name, brand, num_t):
+    def __init__(self, no, name, brand, num_t):
+        
+        self.eno = no
         self.ename = name
         self.ebrand = brand
         self.enum_t = num_t
