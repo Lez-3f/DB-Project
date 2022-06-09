@@ -10,6 +10,7 @@
 | uname   |     | varchar | 用户姓名                    |
 | usex    |     | int     | 用户性别 0-♀， 1-♂           |
 | upasswd |     | text    | 密码                      |
+| utype   |     | int     | 0-老师 1-学生               |
 
 ### 管理员表（后台更改）
 

@@ -3,7 +3,7 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 21:21:14
 LastEditors: Zel
-LastEditTime: 2022-06-08 15:55:37
+LastEditTime: 2022-06-09 13:57:52
 '''
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -185,14 +185,21 @@ def get_court_info():
     """
     session = DBSession()
         
-    ct_rsv = (
-        session.query( Court.cno, Court.cname, Reservation.rguest, Reservation.rbegin, Reservation.rend)
-        .join(Reservation, Reservation.rcourt == Court.cno)
-        .filter(Reservation.rstate == RSV_ST_PASS)
+    cts = (
+        session.query( Court)
+        .filter(Court.cstate != CT_ST_MAINTAIN)
         .all()
     )
-    
-    return ct_rsv
+    return cts
+
+def get_court(no):
+    session = DBSession()
+    ct = (
+        session.query(Court)
+        .filter(Court.cno == no)
+        .one_or_none()
+    )
+    return ct
 
 def get_court_rsv_pass(no):
     rtn = {}
@@ -239,9 +246,24 @@ def get_court_rsv_wait_or_pass(no):
 
 """管理员功能接口begin"""
 
-def add_court(no, name, type, info=''):
+def set_court(no, attr, val):
     rtn = {}
-    new_court = Court(no, name, info, type)
+    session = DBSession()
+    
+    session.query(Court)\
+        .filter(Court.cno == no)\
+        .update({attr: val})
+    rtn = session_commit(session)
+    if 'err_msg' in rtn.keys():
+        return rtn
+    
+    session.close()
+    rtn['ret'] = SUCCESS_CODE
+    return rtn
+
+def add_court(cno, cname, ctype, cinfo=''):
+    rtn = {}
+    new_court = Court(cno, cname, cinfo, ctype)
     session = DBSession()
     
     session.add(new_court)
@@ -278,20 +300,6 @@ def remove_court(no):
     session.close()
     rtn['ret'] = SUCCESS_CODE
     return rtn
-
-def set_court(no, st:int):
-    rtn = {}
-    session = DBSession()
-    session.query(Court).filter(Court.cno == no)\
-        .update({'cstate': st})
-    rtn = session_commit(session)
-    if 'err_msg' in rtn.keys():
-        return rtn
-    
-    session.close()
-    rtn['ret'] = SUCCESS_CODE
-    return rtn
-
     
 
 def remove_eq(no):
@@ -482,6 +490,6 @@ if __name__ == '__main__':
     # print(time_coincidence(bg1, ed2, ed1, ed2))
     # print( start_rental(1, 1, 1) )
     # print(end_rental(20220607003027000001100))
-    print(set_court(1, CT_ST_MAINTAIN))
+    print(set_court(1, 'cstate', CT_ST_MAINTAIN))
     
     pass
