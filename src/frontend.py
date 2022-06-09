@@ -3,9 +3,10 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-29 17:51:22
 LastEditors: Zel
-LastEditTime: 2022-06-09 18:25:04
+LastEditTime: 2022-06-09 22:09:53
 '''
-from sqlalchemy import insert, values
+from audioop import add
+from sqlalchemy import column, insert, values
 import backend as bk
 import tkinter as tk
 from PIL import ImageTk, Image
@@ -124,7 +125,7 @@ class App(tk.Frame):
         self.entry_hint['text'] = '登录成功!'
         self.user = check['user']
         print(self.user)
-        time.sleep(1.0)
+        
         self.window_login.destroy()
         
         # 清除组件
@@ -202,20 +203,23 @@ class App(tk.Frame):
         self.tab_view_court = tk.Frame(self.nb_rsv)
         self.tab_manage_court = tk.Frame(self.nb_rsv)
         self.tab_approve_rsv = tk.Frame(self.nb_rsv)
-        self.tab_make_rsv = tk.Frame(self.nb_rsv)
-        self.tab_cancel_rsv = tk.Frame(self.nb_rsv)
+        self.tab_mk_cc_rsv = tk.Frame(self.nb_rsv)
         
         self.nb_rsv.add(self.tab_view_court, text='查看场地')
-        self.view_info(self.tab_view_court , ['cno', 'cname', 'cinfo', 'ctype'], ['编号','场地名','描述', '类型'], bk.get_court_info)
+        self.view_info(self.tab_view_court , ['cno', 'cname', 'cinfo', 'ctype'], \
+            ['编号','场地名','描述', '类型'], bk.get_court_info)
         if self.user[0] == ADMIN:
             self.nb_rsv.add(self.tab_manage_court, text='管理场地')
             self.manage_info(self.tab_manage_court,  ['cno', 'cname', 'cinfo', 'ctype'], ['编号','场地名','描述','类型'],\
                 bk.get_court, bk.set_court, bk.remove_court, bk.add_court)
             
             self.nb_rsv.add(self.tab_approve_rsv, text='审批预约')
+            self.view_info(self.tab_approve_rsv, ['rno', 'rguest', 'rcourt', 'rbegin', 'rend', 'rreason'],\
+                ['预约单号', '预约者', '预约场地', '预约开始时间', '预约结束时间', '预约理由'],\
+                get_model_list=bk.get_rsv_all_wait)
+            
         else:
-            self.nb_rsv.add(self.tab_make_rsv, text='预约申请')
-            self.nb_rsv.add(self.tab_cancel_rsv, text='取消预约')
+            self.nb_rsv.add(self.tab_mk_cc_rsv, text='预约申请和取消')
         
         self.nb_rsv.pack(fill=tk.BOTH, expand=True)
         self.window_rsv.mainloop()
@@ -228,7 +232,18 @@ class App(tk.Frame):
     def user_page(self):
         pass
     
-    def manage_info(self, frame, cols_model, cols_print, get_module, set_module, rm_module, add_module):
+    def rsv_apply(self, frame,):
+        frame_mdf = ttk.LabelFrame(frame, text="预约申请")
+        frame_mdf.grid(column=0, row=0, sticky='W', padx=8, pady=4)
+        
+        frame_add = ttk.LabelFrame(frame, text="插入数据")
+        frame_add.grid(column=0, row=1, sticky='W', padx=8, pady=4)
+        
+        frame_table = ttk.LabelFrame(frame, text='预约信息')
+        frame_table.grid(column=0, row=3, sticky='W', padx=8, pady=4)
+        pass
+    
+    def manage_info(self, frame, cols_model, cols_print, get_model, set_model, rm_model, add_model):
         # 增删改
         
         frame_mdf = ttk.LabelFrame(frame, text="修改数据")
@@ -242,45 +257,54 @@ class App(tk.Frame):
         
         frame_table = ttk.LabelFrame(frame, text='数据信息')
         frame_table.grid(column=0, row=3, sticky='W', padx=8, pady=4)
-        
-        def show_module(no):
-            
-            if not no:
-                return 
-            md = get_module(no)
-            
-            for widget in frame_table.winfo_children():
-                widget.destroy()
-            table = ttk.Treeview(frame_table, height=10, columns=cols_model, show='headings')
-            col_num = len(cols_model)
-        
-            for j in range(col_num):
-                table.column(str(cols_model[j]), width=150, anchor='center')
-                table.heading(cols_model[j], text=cols_print[j])
-            
-            if not md:
-                return
-            table.insert('', 0, values=[getattr(md, col, None) for col in cols_model])
-            
-            def on_click(event):
-                item = table.selection()[0]
-                # print(table.item(item, "value"))
-                
-            table.bind('<ButtonRelease-1>', on_click)
 
-            vbar = ttk.Scrollbar(frame_table, orient=tk.VERTICAL, command=table.yview)
-            table.configure(yscrollcommand=vbar.set)    
-            table.pack()
-            pass
-        
         # 修改
+        self.modify_val(frame_mdf,  frame_table, cols_model, cols_print, get_model, set_model)
+        
+        # 删除
+        self.remove_val(frame_rm,  frame_table, cols_model, cols_print, get_model, rm_model)
+        
+        # 插入
+        self.insert_val(frame_add,  frame_table, cols_model, cols_print, get_model, add_model)
+        
+    def show_model(self, frame_table, cols_model, cols_print, get_model, no):
+                
+        if not no:
+            return 
+        md = get_model(no)
+        
+        for widget in frame_table.winfo_children():
+            widget.destroy()
+        table = ttk.Treeview(frame_table, height=10, columns=cols_model, show='headings')
+        col_num = len(cols_model)
+    
+        for j in range(col_num):
+            table.column(str(cols_model[j]), width=150, anchor='center')
+            table.heading(cols_model[j], text=cols_print[j])
+        
+        if not md:
+            return
+        table.insert('', 0, values=[getattr(md, col, None) for col in cols_model])
+        
+        def on_click(event):
+            item = table.selection()[0]
+            # print(table.item(item, "value"))
+            
+        table.bind('<ButtonRelease-1>', on_click)
+
+        vbar = ttk.Scrollbar(frame_table, orient=tk.VERTICAL, command=table.yview)
+        table.configure(yscrollcommand=vbar.set)    
+        table.pack()
+        pass
+    
+    def modify_val(self, frame_mdf, frame_table, cols_model, cols_print, get_model, set_model):
         tk.Label(frame_mdf, text=" 修改编号 ").grid(row=0, column=0)
         
         mdf_ent_no = tk.Entry(frame_mdf, width=10)
         mdf_ent_no.grid(row=0, column=1)
         
         mdf_bt_ck = tk.Button(frame_mdf, text='查看', width=10,\
-                            command=lambda: show_module(mdf_ent_no.get()))
+                            command=lambda: self.show_model(frame_table, cols_model, cols_print, get_model, mdf_ent_no.get()))
         mdf_bt_ck.grid(row=0, column=2)
         
         tk.Label(frame_mdf, text=" 修改属性 ").grid(row=0, column=3)
@@ -298,39 +322,34 @@ class App(tk.Frame):
         
         mdf_bt_cf = tk.Button(frame_mdf, text='确认修改', width=10,\
                     command=lambda: (
-                        set_module(mdf_ent_no.get(), cols_model[cols_print.index(mdf_cbl.get())], mdf_ent_val.get()),\
-                        show_module(mdf_ent_no.get())
+                        set_model(mdf_ent_no.get(), cols_model[cols_print.index(mdf_cbl.get())], mdf_ent_val.get()),\
+                        self.show_model(frame_table, cols_model, cols_print, get_model, mdf_ent_no.get())
                         )
         )
         mdf_bt_cf.grid(row=1, column=0, columnspan=7)
         
-        # 删除
+    def remove_val(self, frame_rm, frame_table, cols_model, cols_print, get_model, rm_model):
         tk.Label(frame_rm, text=" 删除编号 ").grid(row=0, column=0)
         rm_ent_no = tk.Entry(frame_rm, width=10)
         rm_ent_no.grid(row=0, column=1)
      
         rm_bt_ck = tk.Button(frame_rm, text='查看', width=10,\
-                            command=lambda: show_module(rm_ent_no.get()))
+                            command=lambda: self.show_model(frame_table, cols_model, cols_print, get_model, rm_ent_no.get()))
         rm_bt_ck.grid(row=0, column=2)
         
         rm_bt_cf = tk.Button(frame_rm, text='确认删除', width=10,\
                     command=lambda: (
-                        rm_module(rm_ent_no.get()),\
-                        show_module(rm_ent_no.get())
+                        rm_model(rm_ent_no.get()),\
+                        self.show_model(frame_table, cols_model, cols_print, get_model, rm_ent_no.get())
                         )
         )
         rm_bt_cf.grid(row=1, column=0, columnspan=7)
         
-        # 插入
+    def insert_val(self, frame_add,  frame_table, cols_model, cols_print, get_model, add_model):
         tk.Label(frame_add, text=" 选择属性 ").grid(row=0, column=0)
+    
         
-        add_cbl = ttk.Combobox(frame_add, textvariable=tk.StringVar(), width=10)
-        add_cbl['values'] = cols_print
-        add_cbl.current(0)   #选择第一个
-        add_cbl.bind("<<ComboboxSelected>>")
-        add_cbl.grid(row=0, column=1)
-        
-        tk.Label(frame_add, text=" 属性值 ").grid(row=0, column=2)
+        tk.Label(frame_add, text=" 填写属性值 ").grid(row=0, column=1, columnspan=2)
         
         add_val = {}
         for col in cols_model:
@@ -339,13 +358,6 @@ class App(tk.Frame):
         for col in cols_print:
             add_val_print[col] = None
         
-        def add_val_update():
-            col_print = add_cbl.get()
-            col_module = cols_model[cols_print.index(col_print)]
-            add_val[col_module] = add_ent_val.get()
-            add_val_print[col_print] = add_ent_val.get()
-            add_val_ck.config(text=my_dict2str(add_val_print))
-            pass
         
         def my_dict2str(d:dict):
             s = '['
@@ -354,35 +366,43 @@ class App(tk.Frame):
             return s + ']'
         
         def insert():
+            
             cnt = 0
-            for k in add_val.keys():
-                if add_val[k] != None:
+            for i in range(row_num):
+                val = add_ent_vals[i].get()
+                if val != None:
+                    add_val[cols_model[i]] = val
+                    add_val_print[cols_print[i]] = val
+                    
                     cnt = cnt + 1
+                    
             if cnt == len(cols_model):
-                rtn = add_module(**add_val)
+                rtn = add_model(**add_val)
                 if rtn['ret'] == SUCCESS_CODE:
                     add_val_ck.config(text=my_dict2str(add_val_print)+'，插入成功！')
-                else:
-                    add_val_ck.config(text=my_dict2str(add_val_print)+'，插入失败！')
+                    self.show_model(frame_table, cols_model, cols_print, get_model, add_val[cols_model[0]])
                     
+                else:
+                    add_val_ck.config(text=my_dict2str(add_val_print)+'，插入失败！')  
             pass
         
-        add_ent_val = tk.Entry(frame_add, width=10)
-        add_ent_val.grid(row=0, column=3)
+        row_num = len(cols_model)
+        add_ent_vals = []
+        for i in range(row_num):
+            tk.Label(frame_add, text=cols_print[i], width=10).grid(row=i+1, column=0)
+            ent = tk.Entry(frame_add, text=cols_print[i], width=20)
+            ent.grid(row=i+1, column=1, columnspan=2)
+            add_ent_vals.append(ent)
         
-        add_bt_upd = tk.Button(frame_add, text='添加', width=10,\
-                        command=add_val_update)
-        add_bt_upd.grid(row=0, column=4)
-
-        tk.Label(frame_add, text='待插入的数据').grid(row=1, column=0)
-        add_val_ck = tk.Label(frame_add, text=my_dict2str(add_val_print))
-        add_val_ck.grid(row=1, column=1, columnspan=6)
+        add_val_ck = tk.Label(frame_add, text='')
+        add_val_ck.grid(row=row_num+2, column=0, columnspan=6)
         
         add_bt_cf = tk.Button(frame_add, text='确认插入', width=10,\
                     command=insert)
-        add_bt_cf.grid(row=2, column=0, columnspan=7)
+        add_bt_cf.grid(row=row_num+1, column=0, columnspan=3)
+        
     
-    def view_info(self, frame, cols_model, cols_print, get_module_list):
+    def view_info(self, frame, cols_model, cols_print, get_model_list):
         
         frame_search = ttk.LabelFrame(frame, text="查询框")
         frame_search.grid(column=0, row=0, sticky='W', padx=8, pady=4)
@@ -406,19 +426,19 @@ class App(tk.Frame):
             info = entry_in.get()
             # print(info)
             
-            module_list = get_module_list()
+            model_list = get_model_list()
             
             # 无搜索信息，插入所有数据
             if not info:
-                row_num = len(module_list)
+                row_num = len(model_list)
 
                 for i in range(row_num):
-                    table.insert('', i, values=[getattr(module_list[i], col, None) for col in cols_model])
+                    table.insert('', i, values=[getattr(model_list[i], col, None) for col in cols_model])
                 
             # 插入符合条件的数据   
             else:
                 i = 0
-                for md in module_list:
+                for md in model_list:
                     if str(info) in str(getattr(md, search_col)):
                         # print('find')
                         table.insert('', i, values=[getattr(md, col, None) for col in cols_model])
@@ -437,56 +457,21 @@ class App(tk.Frame):
             table.pack()
             # vbar.pack(side=tk.LEFT)
             
-            if TEST or frame == self.tab_view_court :
-                def show_rsv():
-                    ttb = {}
-                    cno = table.item( table.selection()[0])['values'][0]
-                    print('cno' + str(cno))
-                    ct_rsv = bk.get_court_rsv_pass(cno)
-                    
-                    seven_day = [(datetime.datetime.today() + datetime.timedelta(i)).date() for i in range(7)]
-                    time_rg = LEGAL_TIME[1] - LEGAL_TIME[0] + 1
-                    for day in seven_day:
-                        ttb[day] = [0 for i in range(time_rg+1)]
-                    for day in seven_day:
-                        print(len(ttb[day]))
-                    
-                    for rsv in ct_rsv:
-                        rsv:Reservation
-                        date = rsv.rbegin.date()
-                        # print(date)
-                        begin, end = rsv.rbegin.hour, rsv.rend.hour
-                        for i in range(end-begin):
-                            if rsv.rguest == self.user[1].uno:
-                                ttb[date][i+begin-LEGAL_TIME[0]] = 2
-                            else: 
-                                ttb[date][i+begin-LEGAL_TIME[0]] = 1
-
-                    # print(ttb)
-                    wd_ttb = tk.Tk()
-                    
-                    tk.Label(wd_ttb, text='', width=10).grid(row=0, column=0)
-                    for i in range(7):
-                        date = seven_day[i]
-                        tk.Label(wd_ttb, text=str(date), width=10).grid(row=0, column=i+1)
-                        
-                    for j in range(time_rg):
-                        time_str = f'{LEGAL_TIME[0]+j}:00-{LEGAL_TIME[0]+j+1}:00'
-                        tk.Label(wd_ttb, text=time_str, width=10).grid(row=j+1, column=0)
-                        for k in range(7):
-                            date = seven_day[k]
-                            if(j >= len(ttb[date])):
-                                print(f'{j}  {date} {len(ttb[date])}')
-                            if ttb[date][j] == 1: color = 'red'
-                            elif ttb[date][j] == 0: color = 'SpringGreen'
-                            else: color = 'yellow'
-                            tk.Label(wd_ttb, bg=color, width=10).grid(row=j+1, column=k+1)
-                            
-                    tk.Label(wd_ttb, text='红色表示占用，绿色表示可以预约, 黄色表示本人预约').grid(row=time_rg+1, column=0, columnspan=8)
-                    wd_ttb.mainloop()
-                
-                bt_rsv = tk.Button(frame_table, text='查看预约',command=show_rsv)
+            if frame == self.tab_view_court :
+                bt_rsv = tk.Button(frame_table, text='查看预约',\
+                    command=lambda: self.show_rsv(table.item(table.selection()[0])['values'][0], bk.get_court_rsv_pass))
                 bt_rsv.pack()
+            if frame == self.tab_approve_rsv :
+                bt_agree = tk.Button(frame_table, text='通过申请',\
+                    command=lambda: (bk.pass_reservation(table.item(table.selection()[0])['values'][0]),
+                                    show_table_sel())
+                    )
+                bt_agree.pack()
+                bt_rej = tk.Button(frame_table, text='拒绝申请',\
+                    command=lambda: (bk.reject_reservation(table.item(table.selection()[0])['values'][0]),
+                                     show_table_sel())
+                    )
+                bt_rej.pack()
         pass  
         
         #### search #####
@@ -504,6 +489,50 @@ class App(tk.Frame):
         bt_search = tk.Button(frame_search, text="查询", width=10, command=lambda: show_table_sel())
         bt_search.pack(side=tk.LEFT)
 
+    def show_rsv(self, cno, get_rsv):
+        ttb = {}
+        ct_rsv = get_rsv(cno)
+        
+        seven_day = [(datetime.datetime.today() + datetime.timedelta(i)).date() for i in range(7)]
+        time_rg = LEGAL_TIME[1] - LEGAL_TIME[0] + 1
+        for day in seven_day:
+            ttb[day] = [0 for i in range(time_rg+1)]
+        for day in seven_day:
+            print(len(ttb[day]))
+        
+        for rsv in ct_rsv:
+            rsv:Reservation
+            date = rsv.rbegin.date()
+            # print(date)
+            begin, end = rsv.rbegin.hour, rsv.rend.hour
+            for i in range(end-begin):
+                if rsv.rguest == self.user[1].uno:
+                    ttb[date][i+begin-LEGAL_TIME[0]] = 2
+                else: 
+                    ttb[date][i+begin-LEGAL_TIME[0]] = 1
+
+        # print(ttb)
+        wd_ttb = tk.Tk()
+        
+        tk.Label(wd_ttb, text='', width=10).grid(row=0, column=0)
+        for i in range(7):
+            date = seven_day[i]
+            tk.Label(wd_ttb, text=str(date), width=10).grid(row=0, column=i+1)
+            
+        for j in range(time_rg):
+            time_str = f'{LEGAL_TIME[0]+j}:00-{LEGAL_TIME[0]+j+1}:00'
+            tk.Label(wd_ttb, text=time_str, width=10).grid(row=j+1, column=0)
+            for k in range(7):
+                date = seven_day[k]
+                if(j >= len(ttb[date])):
+                    print(f'{j}  {date} {len(ttb[date])}')
+                if ttb[date][j] == 1: color = 'red'
+                elif ttb[date][j] == 0: color = 'SpringGreen'
+                else: color = 'yellow'
+                tk.Label(wd_ttb, bg=color, width=10).grid(row=j+1, column=k+1)
+                
+        tk.Label(wd_ttb, text='红色表示占用，绿色表示可以预约, 黄色表示本人预约').grid(row=time_rg+1, column=0, columnspan=8)
+        wd_ttb.mainloop()
     
 
 def run_app():

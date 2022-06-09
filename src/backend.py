@@ -3,7 +3,7 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 21:21:14
 LastEditors: Zel
-LastEditTime: 2022-06-09 17:16:19
+LastEditTime: 2022-06-09 19:04:09
 '''
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -239,6 +239,19 @@ def get_court_rsv_wait_or_pass(no):
     )
     
     return ct_rsv
+
+def get_rsv_all_wait():
+    rtn = {}
+    session = DBSession()
+    
+    ct_rsv = (
+        session.query(Reservation)
+        .filter(Reservation.rstate == 0)
+        .all()
+    )
+    
+    return ct_rsv
+    
     
       
 """用户通用功能接口end"""
@@ -456,7 +469,7 @@ def make_reservation(guest, court, begin:datetime, end:datetime, reason):
     rtn['ret'] = SUCCESS_CODE
     return rtn
 
-def get_rsv_all(no):
+def get_user_rsv_all(no):
     session = DBSession()
     
     ct_rsv = (
