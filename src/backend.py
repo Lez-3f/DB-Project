@@ -3,7 +3,7 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 21:21:14
 LastEditors: Zel
-LastEditTime: 2022-06-09 19:04:09
+LastEditTime: 2022-06-10 00:47:17
 '''
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -252,7 +252,15 @@ def get_rsv_all_wait():
     
     return ct_rsv
     
+def get_rsv(rno):
+    session = DBSession()
     
+    rsv = (
+        session.query(Reservation)
+        .filter(Reservation.rno == rno)
+        .one_or_none()
+    ) 
+    return rsv
       
 """用户通用功能接口end"""
 
@@ -265,6 +273,21 @@ def set_court(no, attr, val):
     
     session.query(Court)\
         .filter(Court.cno == no)\
+        .update({attr: val})
+    rtn = session_commit(session)
+    if 'err_msg' in rtn.keys():
+        return rtn
+    
+    session.close()
+    rtn['ret'] = SUCCESS_CODE
+    return rtn
+
+def set_eq(no, attr, val):
+    rtn = {}
+    session = DBSession()
+    
+    session.query(Equipment)\
+        .filter(Equipment.eno == no)\
         .update({attr: val})
     rtn = session_commit(session)
     if 'err_msg' in rtn.keys():
@@ -458,6 +481,7 @@ def make_reservation(guest, court, begin:datetime, end:datetime, reason):
     state = RSV_ST_WAIT
     if is_talent_stu(guest): state = RSV_ST_PASS # 体育生不用审批
     new_rsv = Reservation(guest, court, begin, end, reason, state)
+    new_no = new_rsv.rno
     
     session = DBSession()
     session.add(new_rsv)
@@ -467,6 +491,7 @@ def make_reservation(guest, court, begin:datetime, end:datetime, reason):
     
     session.close()
     rtn['ret'] = SUCCESS_CODE
+    rtn['no'] = new_no
     return rtn
 
 def get_user_rsv_all(no):
@@ -475,6 +500,17 @@ def get_user_rsv_all(no):
     ct_rsv = (
         session.query(Reservation)
         .filter(Reservation.rguest == no)
+        .order_by(desc(Reservation.rtime))
+        .all()
+    )
+    
+def get_user_rsv_just_now(uno):
+    session = DBSession()
+    
+    ct_rsv = (
+        session.query(Reservation)
+        .filter(Reservation.rguest == uno)
+        .filter(datetime.now() <  Reservation.rtime + timedelta(minutes=10))
         .order_by(desc(Reservation.rtime))
         .all()
     )
