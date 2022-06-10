@@ -3,7 +3,7 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-29 17:51:22
 LastEditors: Zel
-LastEditTime: 2022-06-10 12:43:15
+LastEditTime: 2022-06-10 12:51:33
 '''
 import backend as bk
 import tkinter as tk
@@ -284,8 +284,8 @@ class App(tk.Frame):
         
         # self.nb_user.add(self.tab_manage_self, text='管理个人信息')
         # self.manage_info(self.tab_manage_self, ['uname'])
-        
-        if self.user[0] == STUDENT or TEACHER:
+        print(self.user[0] == 1 or 2 )
+        if self.user[0] == STUDENT or self.user[0] == TEACHER:
             self.nb_user.add(self.tab_view_self_rsv, text='查看个人预约')
             self.view_info(self.tab_view_self_rsv, ['rno', 'rcourt', 'rbegin', 'rend', 'rreason', 'rstate', 'rtime'],\
                 ['预约单号', '预约场地', '预约开始时间', '预约结束时间', '预约理由', '预约状态', '申请时间'],\
@@ -295,11 +295,10 @@ class App(tk.Frame):
                 ['租借单号', '器材编号', '租借数量', '领取时间', '归还时间', '租借状态'],\
                     lambda:bk.get_user_rt_all(self.user[1].uno))
         else:
-            # self.nb_user.add(self.tab_manager_all_user)
+            self.nb_user.add(self.tab_manager_all_user, text='管理用户信息')
             # self.manage_info(self.tab_manager_all_user,  ['uno', 'unmame', 'usex', 'upasswd'],\
-            #                  ['账号', '姓名', '性别', '密码'], get_user)
-            pass
-        
+            #                  ['账号', '姓名', '性别', '密码'], bk.get_user, bk.set_user, bk.rm_user, bk.add_user)
+            # pass
         self.nb_user.pack(fill=tk.BOTH, expand=True)
         self.window_user.mainloop()
         
