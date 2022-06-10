@@ -3,7 +3,7 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-29 17:51:22
 LastEditors: Zel
-LastEditTime: 2022-06-10 12:07:57
+LastEditTime: 2022-06-10 12:43:15
 '''
 import backend as bk
 import tkinter as tk
@@ -13,13 +13,13 @@ from tkinter import ttk
 import time
 import datetime
 
-from utils import ADMIN, FAIL_CODE, LEGAL_TIME, RSV_ST_PASS, RSV_ST_UNVALUE, RSV_ST_WAIT, STUDENT, SUCCESS_CODE
+from utils import ADMIN, FAIL_CODE, LEGAL_TIME, RSV_ST_PASS, RSV_ST_UNVALUE, RSV_ST_WAIT, STUDENT, SUCCESS_CODE, TEACHER
 
 from modules import Court, Equipment, Rental, Reservation, User, Admin, Student, Teacher
 
 import numpy as np
 
-# TEST:bool = True
+TEST:bool = False
 
 main_bg_path = r'figures/main_bgr.gif'
 rsv_bt_img_path = r'figures/basket.gif'
@@ -189,7 +189,7 @@ class App(tk.Frame):
         self.user_bt = tk.Button(self, image=self.user_bt_img, compound=tk.CENTER,\
             command=self.user_page)
         self.user_bt.place(x=bg_w/2+100, y=bg_h/2-50, width=100, height=100)
-        CreateToolTip(self.user_bt, text = '个人信息')
+        CreateToolTip(self.user_bt, text = '用户信息')
         
         pass
     
@@ -267,6 +267,42 @@ class App(tk.Frame):
         pass
     
     def user_page(self):
+        print('进入个人页面')
+        self.window_user = tk.Tk()
+        self.window_user.title('个人信息')
+        
+        self.window_user.minsize(1000, 700)
+        set_geometry(self.window_user, 1000, 700)
+        
+        self.nb_user = ttk.Notebook(self.window_user)
+        
+        # self.tab_manage_self = tk.Frame(self.nb_user)
+        self.tab_view_self_rsv = tk.Frame(self.nb_user)
+        self.tab_view_self_rt = tk.Frame(self.nb_user)
+        self.tab_manager_all_user = tk.Frame(self.nb_user)
+        
+        
+        # self.nb_user.add(self.tab_manage_self, text='管理个人信息')
+        # self.manage_info(self.tab_manage_self, ['uname'])
+        
+        if self.user[0] == STUDENT or TEACHER:
+            self.nb_user.add(self.tab_view_self_rsv, text='查看个人预约')
+            self.view_info(self.tab_view_self_rsv, ['rno', 'rcourt', 'rbegin', 'rend', 'rreason', 'rstate', 'rtime'],\
+                ['预约单号', '预约场地', '预约开始时间', '预约结束时间', '预约理由', '预约状态', '申请时间'],\
+                    lambda:bk.get_user_rsv_all(self.user[1].uno))
+            self.nb_user.add(self.tab_view_self_rt, text='查看个人租借')
+            self.view_info(self.tab_view_self_rt, ['rtno', 'rteq', 'rtnum', 'rtdraw', 'rtreturn', 'rtstate'],\
+                ['租借单号', '器材编号', '租借数量', '领取时间', '归还时间', '租借状态'],\
+                    lambda:bk.get_user_rt_all(self.user[1].uno))
+        else:
+            # self.nb_user.add(self.tab_manager_all_user)
+            # self.manage_info(self.tab_manager_all_user,  ['uno', 'unmame', 'usex', 'upasswd'],\
+            #                  ['账号', '姓名', '性别', '密码'], get_user)
+            pass
+        
+        self.nb_user.pack(fill=tk.BOTH, expand=True)
+        self.window_user.mainloop()
+        
         pass
     
     def start_rt(self, frame):

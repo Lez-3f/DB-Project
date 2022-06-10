@@ -3,7 +3,7 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 21:21:14
 LastEditors: Zel
-LastEditTime: 2022-06-10 12:01:49
+LastEditTime: 2022-06-10 12:43:58
 '''
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -442,6 +442,11 @@ def end_rental(no):
     session.close()
     rtn['ret'] = SUCCESS_CODE
     return rtn
+
+def get_user():
+    
+    session = DBSession()
+    
     
     
 
@@ -507,6 +512,7 @@ def get_user_rsv_all(no):
         .order_by(desc(Reservation.rtime))
         .all()
     )
+    return ct_rsv
     
 def get_user_rsv_just_now(uno):
     session = DBSession()
@@ -518,6 +524,7 @@ def get_user_rsv_just_now(uno):
         .order_by(desc(Reservation.rtime))
         .all()
     )
+    return ct_rsv
     
 def get_rt_draw():
     session = DBSession()
@@ -537,6 +544,15 @@ def get_rt(rtno):
         .all()
     )
     return rt
+
+def get_user_rt_all(uno):
+    session = DBSession()
+    rts = (
+        session.query(Rental)
+        .filter(Rental.rtguest == uno)
+        .all()
+    )
+    return rts
     
 
 """老师学生功能接口end"""
