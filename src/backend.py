@@ -3,7 +3,7 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 21:21:14
 LastEditors: Zel
-LastEditTime: 2022-06-10 00:47:17
+LastEditTime: 2022-06-10 12:01:49
 '''
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -11,7 +11,7 @@ from sqlalchemy import func
 from sqlalchemy import desc
 
 from modules import Court, Equipment, Rental, Reservation, User, Admin, Student, Teacher
-from utils import CT_ST_MAINTAIN, EQ_ST_MAINTAIN, FAIL_CODE, LEGAL_TIME, NORMAL_STU, RSV_ST_PASS, RSV_ST_REJ, RSV_ST_WAIT, RT_ST_RET, SUCCESS_CODE, TALENT_STU
+from utils import CT_ST_MAINTAIN, EQ_ST_MAINTAIN, FAIL_CODE, LEGAL_TIME, NORMAL_STU, RSV_ST_PASS, RSV_ST_REJ, RSV_ST_WAIT, RT_ST_DRAW, RT_ST_RET, SUCCESS_CODE, TALENT_STU
 from utils import BASKETBALL, BADMINTON, TABLETENNIS, VOLLEYBALL
 from utils import TEACHER, STUDENT, ADMIN
 
@@ -382,10 +382,13 @@ def reject_reservation(no):
     rtn['ret'] = SUCCESS_CODE
     return rtn   
 
-def start_rental(guest, eq, num):
-    
+def start_rental(rtguest, rteq, rtnum):
+    rtguest = int(rtguest)
+    rteq = int(rteq)
+    rtnum = int(rtnum)
     rtn = {}
-    new_rental = Rental(guest, eq, num)
+    new_rental = Rental(rtguest, rteq, rtnum)
+    new_no = new_rental.rtno
     session = DBSession()
     session.add(new_rental)
     rtn = session_commit(session)
@@ -393,23 +396,24 @@ def start_rental(guest, eq, num):
         return rtn
     
     num_a = session.query(Equipment.enum_a)\
-           .filter(Equipment.eno == eq)\
+           .filter(Equipment.eno == rteq)\
            .one_or_none()[0]
-    if num > num_a:
+    if rtnum > num_a:
         rtn['ret'] = FAIL_CODE
         rtn['err_msg'] = '器材数量不足'
+        
         return rtn
-    
-    print(num_a)
+
     session.query(Equipment)\
-           .filter(Equipment.eno == eq)\
-           .update({'enum_a': Equipment.enum_a - num}) # 更新数量
+           .filter(Equipment.eno == rteq)\
+           .update({'enum_a': Equipment.enum_a - rtnum}) # 更新数量
     rtn = session_commit(session)
     if 'err_msg' in rtn.keys():
         return rtn
     
     session.close()
     rtn['ret'] = SUCCESS_CODE
+    rtn['no'] = new_no
     return rtn
 
 def end_rental(no):
@@ -514,6 +518,26 @@ def get_user_rsv_just_now(uno):
         .order_by(desc(Reservation.rtime))
         .all()
     )
+    
+def get_rt_draw():
+    session = DBSession()
+    
+    rts = (
+        session.query(Rental)
+        .filter(Rental.rtstate == RT_ST_DRAW)
+        .all()
+    )
+    return rts
+    
+def get_rt(rtno):
+    session = DBSession()
+    rt = (
+        session.query(Rental)
+        .filter(Rental.rtno == rtno)
+        .all()
+    )
+    return rt
+    
 
 """老师学生功能接口end"""
 
@@ -523,15 +547,16 @@ if __name__ == '__main__':
     remove_user(100002)
     # print(remove_user(1))
     
-    print(make_reservation(10001, 1, datetime(2022, 6, 11, hour=9), datetime(2022, 6, 11, hour=11), '练习'))
-    print(make_reservation(20001, 1, datetime(2022, 6, 11, hour=13), datetime(2022, 6, 11, hour=16), '练习'))
+    # print(make_reservation(10001, 1, datetime(2022, 6, 11, hour=9), datetime(2022, 6, 11, hour=11), '练习'))
+    # print(make_reservation(20001, 1, datetime(2022, 6, 11, hour=13), datetime(2022, 6, 11, hour=16), '练习'))
     
-    print(make_reservation(10003, 1, datetime(2022, 6, 12, hour=10), datetime(2022, 6, 12, hour=12), '练习'))
-    print(make_reservation(10004, 1, datetime(2022, 6, 12, hour=15), datetime(2022, 6, 12, hour=17), '练习'))
-    print(make_reservation(10005, 1, datetime(2022, 6, 12, hour=19), datetime(2022, 6, 12, hour=21), '练习'))
-    print(make_reservation(20002, 1, datetime(2022, 6, 13, hour=14), datetime(2022, 6, 13, hour=18), '练习'))
-    print(make_reservation(10007, 1, datetime(2022, 6, 14, hour=14), datetime(2022, 6, 14, hour=17), '练习'))
-    
+    # print(make_reservation(10003, 1, datetime(2022, 6, 12, hour=10), datetime(2022, 6, 12, hour=12), '练习'))
+    # print(make_reservation(10004, 1, datetime(2022, 6, 12, hour=15), datetime(2022, 6, 12, hour=17), '练习'))
+    # print(make_reservation(10005, 1, datetime(2022, 6, 12, hour=19), datetime(2022, 6, 12, hour=21), '练习'))
+    # print(make_reservation(20002, 1, datetime(2022, 6, 13, hour=14), datetime(2022, 6, 13, hour=18), '练习'))
+    # print(make_reservation(10007, 1, datetime(2022, 6, 14, hour=14), datetime(2022, 6, 14, hour=17), '练习'))
+    start_rental(1, 32, 10)
+    end_rental(20220610115410000001318)
     # add_equipment('篮球7号球', 'NIKE', 50)
     # remove_eq(1)
     # pass_reservation(20220603210958000001245)

@@ -3,12 +3,8 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-29 17:51:22
 LastEditors: Zel
-LastEditTime: 2022-06-10 01:20:38
+LastEditTime: 2022-06-10 12:07:57
 '''
-from audioop import add
-from cgi import print_directory
-from pydoc import visiblename
-from sqlalchemy import column, insert, values
 import backend as bk
 import tkinter as tk
 from PIL import ImageTk, Image
@@ -23,7 +19,7 @@ from modules import Court, Equipment, Rental, Reservation, User, Admin, Student,
 
 import numpy as np
 
-TEST:bool = True
+# TEST:bool = True
 
 main_bg_path = r'figures/main_bgr.gif'
 rsv_bt_img_path = r'figures/basket.gif'
@@ -75,8 +71,11 @@ def CreateToolTip(widget, text):
 
 class App(tk.Frame):
     
-    def __init__(self, master=None):
-        super().__init__(master)
+    def __init__(self, root=None):
+        super().__init__(root)
+        root.minsize(bg_w, bg_h)
+        set_geometry(root, bg_w, bg_h)
+        
         self.pack()
         self.main_bg_img = Image.open(main_bg_path)
         self.main_bg = ImageTk.PhotoImage(image=self.main_bg_img) #不加self无法显示图片
@@ -135,13 +134,15 @@ class App(tk.Frame):
         print('已经隐藏')
         self.about_bt.place_forget()
         
-        return self.user_homepage()
-                 
+        return self.user_homepage()                
         
     def login(self):
         
         self.window_login = tk.Tk()
         self.window_login.title('登录')
+        
+        self.window_login.minsize(200, 100)
+        set_geometry(self.window_login, 200, 100)
         
         self.frame_no = tk.Frame(self.window_login)
         tk.Label(self.frame_no, text=' 账号 ').pack(side=tk.LEFT)
@@ -194,11 +195,12 @@ class App(tk.Frame):
     
     def reservation_page(self):
         
-        print('预约页面')
+        print('进入预约页面')
         self.window_rsv = tk.Tk()
         self.window_rsv.title('场地预约')
         
-        self.window_rsv.minsize(1000, 500)
+        self.window_rsv.minsize(1000, 700)
+        set_geometry(self.window_rsv, 1000, 700)
         
         self.nb_rsv = ttk.Notebook(self.window_rsv)
         
@@ -231,17 +233,19 @@ class App(tk.Frame):
     
     def rental_page(self):
         
-        print('租借页面')
+        print('进入租借页面')
         self.window_rt = tk.Tk()
         self.window_rt.title('器材租借')
         
-        self.window_rt.minsize(1000, 500)
+        self.window_rt.minsize(1000, 700)
+        set_geometry(self.window_rt, 1000, 700)
         
         self.nb_rt = ttk.Notebook(self.window_rt)
         
         self.tab_view_eq = tk.Frame(self.nb_rt)
         self.tab_manage_eq = tk.Frame(self.nb_rt)
-        self.tab_record_rt = tk.Frame(self.nb_rt)
+        self.tab_end_rt = tk.Frame(self.nb_rt)
+        self.tab_start_rt = tk.Frame(self.nb_rt)
         
         self.nb_rt.add(self.tab_view_eq, text='查看器材')
         self.view_info(self.tab_view_eq , ['eno', 'ename', 'ebrand', 'enum_a', 'enum_t'], \
@@ -252,13 +256,35 @@ class App(tk.Frame):
                 ['编号', '器材名','品牌', '可用数量', '总数量'],\
                 bk.get_eq, bk.set_eq, bk.remove_eq, bk.add_equipment, ['enum_a'])
             
-            self.nb_rt.add(self.tab_record_rt, text='记录租借')
+            self.nb_rt.add(self.tab_start_rt, text='租借登记')
+            self.start_rt(self.tab_start_rt)
+            
+            self.nb_rt.add(self.tab_end_rt, text='结束租借')
+            self.end_rt(self.tab_end_rt)
         
         self.nb_rt.pack(fill=tk.BOTH, expand=True)
         self.window_rt.mainloop()
         pass
     
     def user_page(self):
+        pass
+    
+    def start_rt(self, frame):
+        frame_add = ttk.LabelFrame(frame, text="租借登记")
+        frame_add.grid(column=0, row=1, sticky='W', padx=8, pady=4)
+        
+        frame_table = ttk.LabelFrame(frame, text='租借信息')
+        frame_table.grid(column=0, row=2, sticky='W', padx=8, pady=4)
+        
+        self.insert_val(frame_add, frame_table, ['rtno', 'rtguest', 'rteq', 'rtnum', 'rtdraw'],\
+             ['租借单号', '租借者', '器材编号', '租借数量', '领取时间'],\
+                 bk.get_rt, bk.start_rental, cols_auto=['rtno', 'rtdraw'])
+        
+        
+    def end_rt(self, frame):
+        self.view_info(frame, ['rtno', 'rtguest', 'rteq', 'rtdraw', 'rtnum'],\
+                ['租借单号', '租借者', '器材编号', '租借时间', '租借数量'],\
+            get_model_list=bk.get_rt_draw)
         pass
     
     def mk_rsv(self, frame):
@@ -310,14 +336,14 @@ class App(tk.Frame):
                     
             if cnt == row_num:
                 rtn = add_model(**add_val)
-                print(rtn)
+                # print(rtn)
                 if rtn['ret'] == SUCCESS_CODE:
                     add_val_ck.config(text=my_dict2str(add_val_print)+'，添加成功！')
                     self.show_model(frame_table, cols_model, cols_print, get_model, rtn['no'])
                     
                 else:
                     add_val_ck.config(text=my_dict2str(add_val_print)+'，添加失败！') 
-                    print(rtn['err_msg']) 
+                    print('错误信息' + rtn['err_msg']) 
             pass
         
         row_num = len(cols_add)
@@ -339,10 +365,10 @@ class App(tk.Frame):
         # 增删改
         
         frame_mdf = ttk.LabelFrame(frame, text="修改数据")
-        frame_mdf.grid(column=0, row=0, sticky='W', padx=8, pady=4)
+        frame_mdf.grid(column=0, row=1, sticky='W', padx=8, pady=4)
         
         frame_add = ttk.LabelFrame(frame, text="添加数据")
-        frame_add.grid(column=0, row=1, sticky='W', padx=8, pady=4)
+        frame_add.grid(column=0, row=0, sticky='W', padx=8, pady=4)
         
         frame_rm = ttk.LabelFrame(frame, text="删除数据")
         frame_rm.grid(column=0, row=2, sticky='W', padx=8, pady=4)
@@ -440,11 +466,17 @@ class App(tk.Frame):
     def insert_val(self, frame_add,  frame_table, cols_model, cols_print, get_model, add_model, cols_auto=None):
         
         if cols_auto == None: cols_auto=[]
-        cols_add:list = cols_model
+        cols_model:list
+        cols_add:list = cols_model.copy()
+        
         for col in cols_auto:
             cols_add.remove(col)
         cols_add_print = [cols_print[cols_model.index(cols_add[i])] for i in range(len(cols_add))]
-        print(cols_add)
+        # for col in cols_add:
+        #     print(cols_model.index(col))
+        # print(cols_model)
+        # print(cols_add)
+        # print(cols_add_print)
         
         tk.Label(frame_add, text=" 选择属性 ").grid(row=0, column=0)
     
@@ -475,10 +507,15 @@ class App(tk.Frame):
                     cnt = cnt + 1
                     
             if cnt == row_num:
+                print('add_val: {}'.format(add_val))
                 rtn = add_model(**add_val)
                 if rtn['ret'] == SUCCESS_CODE:
                     add_val_ck.config(text=my_dict2str(add_val_print)+'，添加成功！')
-                    self.show_model(frame_table, cols_model, cols_print, get_model, add_val[cols_model[0]])
+                    if 'no' in cols_model[0]:
+                        no = add_val[cols_model[0]]
+                    else:
+                        no = rtn['no']
+                    self.show_model(frame_table, cols_model, cols_print, get_model, no)
                     
                 else:
                     add_val_ck.config(text=my_dict2str(add_val_print)+'，添加失败！')  
@@ -500,7 +537,7 @@ class App(tk.Frame):
         add_bt_cf.grid(row=row_num+1, column=0, columnspan=3)
     
     def show_models_sel(self, frame_table, father_frame, cols_model, cols_print, search_col, get_model_list, search_info=None):
-        print('查询表')
+        
         for widget in frame_table.winfo_children():
             widget.destroy()
         table = ttk.Treeview(frame_table, height=10, columns=cols_model, show='headings')
@@ -509,11 +546,6 @@ class App(tk.Frame):
         for j in range(col_num):
             table.column(str(cols_model[j]), width=150, anchor='center')
             table.heading(cols_model[j], text=cols_print[j])
-        
-        # search_col = cols_model[cols_print.index(cbl.get())]
-        # # print(search_col)
-        # search_info = entry_in.get()
-        # # print(search_info)
         
         model_list = get_model_list()
         
@@ -532,7 +564,7 @@ class App(tk.Frame):
                     # print('find')
                     table.insert('', i, values=[getattr(md, col, None) for col in cols_model])
                     i = i + 1
-            print(len(table.get_children()))
+            # print(len(table.get_children()))
             
         def on_click(event):
             item = table.selection()[0]
@@ -553,15 +585,27 @@ class App(tk.Frame):
             
         if getattr(self, 'tab_approve_rsv', None) and father_frame == self.tab_approve_rsv :
             bt_agree = tk.Button(frame_table, text='通过申请',\
-                command=lambda: (bk.pass_reservation(table.item(table.selection()[0])['values'][0]),
-                                self.show_models_sel(frame_table, father_frame, cols_model, cols_print, search_col, get_model_list, search_info))
+                command=lambda: (\
+                    bk.pass_reservation(table.item(table.selection()[0])['values'][0]),
+                    self.show_models_sel(frame_table, father_frame, cols_model, cols_print, search_col, get_model_list, search_info)
+                    )
                 )
             bt_agree.pack()
             bt_rej = tk.Button(frame_table, text='拒绝申请',\
-                command=lambda: (bk.reject_reservation(table.item(table.selection()[0])['values'][0]),
-                                self.show_models_sel(frame_table, father_frame, cols_model, cols_print, search_col, get_model_list, search_info))
+                command=lambda: (\
+                    bk.reject_reservation(table.item(table.selection()[0])['values'][0]),
+                    self.show_models_sel(frame_table, father_frame, cols_model, cols_print, search_col, get_model_list, search_info)
                 )
+            )
             bt_rej.pack()
+        if getattr(self, 'tab_end_rt', None) and father_frame == self.tab_end_rt :
+            bt_rt = tk.Button(frame_table, text='归还',\
+                command=lambda: (\
+                    bk.end_rental(table.item(table.selection()[0])['values'][0]),
+                    self.show_models_sel(frame_table, father_frame, cols_model, cols_print, search_col, get_model_list, search_info)
+                )
+            )
+            bt_rt.pack()
         pass  
     
     def search_val(self, frame_search, frame_table, frame_father, cols_model, cols_print, get_model_list):
@@ -631,8 +675,8 @@ class App(tk.Frame):
             tk.Label(wd_ttb, text=time_str, width=10).grid(row=j+1, column=0)
             for k in range(7):
                 date = seven_day[k]
-                if(j >= len(ttb[date])):
-                    print(f'{j}  {date} {len(ttb[date])}')
+                # if(j >= len(ttb[date])):
+                #     print(f'{j}  {date} {len(ttb[date])}')
                 if ttb[date][j] == 1: color = 'red'
                 elif ttb[date][j] == 0: color = 'SpringGreen'
                 elif ttb[date][j] == 3: color = 'yellow'
@@ -641,24 +685,22 @@ class App(tk.Frame):
                 
         tk.Label(wd_ttb, text='红色表示有人预约，绿色表示可以预约, 黄色表示本人预约未通过, 橙色表示本人预约已通过').grid(row=time_rg+1, column=0, columnspan=8)
         wd_ttb.mainloop()  
+    
+def set_geometry( root:tk.Tk, ww, wh):
+    sw = root.winfo_screenwidth()  # 获取显示区域的宽度
+    sh = root.winfo_screenheight()  # 获取显示区域的高度
+    left = (sw - ww) / 2
+    top = (sh - wh) / 2
+    print('window:{0}x{1} screen:{2}x{3}'.format(ww,wh,sw,sh))
+    print('left: {0}  top: {1}'.format(left, top))
+    
+    root.geometry("%dx%d+%d+%d" % (ww, wh, left, top))
 
 def run_app():
     root = tk.Tk()
     root.title(app_name)   
     app = App(root)
     root.mainloop()
-    
-# def test():
-#     root = tk.Tk()
-#     root.title("T大体育公园信息管理系统")   
-#     canvas = tk.Canvas(root, width=1200,height=699,bd=0, highlightthickness=0)
-#     imgpath = main_bg_path
-#     img = Image.open(imgpath)
-#     photo = ImageTk.PhotoImage(img)
-    
-#     canvas.create_image(700, 500, image=photo)
-#     canvas.pack()
-#     root.mainloop()
     
 def main():
     root = tk.Tk()
