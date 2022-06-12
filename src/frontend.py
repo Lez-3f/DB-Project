@@ -3,7 +3,7 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-29 17:51:22
 LastEditors: Zel
-LastEditTime: 2022-06-10 12:51:33
+LastEditTime: 2022-06-10 18:09:02
 '''
 import backend as bk
 import tkinter as tk
@@ -641,6 +641,14 @@ class App(tk.Frame):
                 )
             )
             bt_rt.pack()
+        if getattr(self, 'tab_view_self_rsv', None) and father_frame == self.tab_view_self_rsv :
+            bt_rt = tk.Button(frame_table, text='取消',\
+                command=lambda: (\
+                    bk.cancel_reservation(table.item(table.selection()[0])['values'][0]),
+                    self.show_models_sel(frame_table, father_frame, cols_model, cols_print, search_col, get_model_list, search_info)
+                )
+            )
+            bt_rt.pack()
         pass  
     
     def search_val(self, frame_search, frame_table, frame_father, cols_model, cols_print, get_model_list):
@@ -695,8 +703,6 @@ class App(tk.Frame):
                         ttb[date][i+begin-LEGAL_TIME[0]] = 2
                     else: 
                         ttb[date][i+begin-LEGAL_TIME[0]] = 1
-                
-
         # print(ttb)
         wd_ttb = tk.Tk()
         

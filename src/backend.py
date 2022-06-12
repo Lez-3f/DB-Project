@@ -3,7 +3,7 @@ Autor: Zel
 Email: 2995441811@qq.com
 Date: 2022-05-28 21:21:14
 LastEditors: Zel
-LastEditTime: 2022-06-10 12:43:58
+LastEditTime: 2022-06-10 18:08:16
 '''
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -11,7 +11,7 @@ from sqlalchemy import func
 from sqlalchemy import desc
 
 from modules import Court, Equipment, Rental, Reservation, User, Admin, Student, Teacher
-from utils import CT_ST_MAINTAIN, EQ_ST_MAINTAIN, FAIL_CODE, LEGAL_TIME, NORMAL_STU, RSV_ST_PASS, RSV_ST_REJ, RSV_ST_WAIT, RT_ST_DRAW, RT_ST_RET, SUCCESS_CODE, TALENT_STU
+from utils import CT_ST_MAINTAIN, EQ_ST_MAINTAIN, FAIL_CODE, LEGAL_TIME, NORMAL_STU, RSV_ST_PASS, RSV_ST_REJ, RSV_ST_UNVALUE, RSV_ST_WAIT, RT_ST_DRAW, RT_ST_RET, SUCCESS_CODE, TALENT_STU
 from utils import BASKETBALL, BADMINTON, TABLETENNIS, VOLLEYBALL
 from utils import TEACHER, STUDENT, ADMIN
 
@@ -553,7 +553,22 @@ def get_user_rt_all(uno):
         .all()
     )
     return rts
+
+
+def cancel_reservation(rno):
+    rtn = {}
+    session = DBSession()
+        
+    session.query(Reservation)\
+           .filter(Reservation.rno == rno)\
+           .update({'rstate': RSV_ST_UNVALUE})
+    rtn = session_commit(session)
+    if 'err_msg' in rtn.keys():
+        return rtn
     
+    session.close()
+    rtn['ret'] = SUCCESS_CODE
+    return rtn
 
 """老师学生功能接口end"""
 
